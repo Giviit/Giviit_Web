@@ -1,0 +1,48 @@
+export function formatCurrency(amount) {
+  if (amount === null || amount === undefined) return '₦0';
+  return '₦' + Number(amount).toLocaleString('en-NG');
+}
+
+export function formatDaysLeft(deadline) {
+  if (!deadline) return 'No deadline';
+  const now = new Date();
+  const end = new Date(deadline);
+  if (end < now) return 'Campaign ended';
+  const diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+  return `${diff} day${diff !== 1 ? 's' : ''} left`;
+}
+
+export function formatProgress(raised, goal) {
+  if (!goal || goal === 0) return 0;
+  return Math.min(100, Math.round((raised / goal) * 100));
+}
+
+export function formatTimeAgo(date) {
+  const now = new Date();
+  const d = new Date(date);
+  const seconds = Math.floor((now - d) / 1000);
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  return `${Math.floor(months / 12)}y ago`;
+}
+
+export function stripEmoji(str) {
+  if (!str) return str;
+  return str.replace(/\p{Extended_Pictographic}/gu, '');
+}
+
+export function buildWhatsAppUrl(campaign, baseUrl) {
+  const name = campaign.title;
+  const raised = formatCurrency(campaign.raised_amount);
+  const goal = formatCurrency(campaign.goal_amount);
+  const url = `${baseUrl}/campaign/${campaign.slug}`;
+  const text = `Help "${name}" reach their goal! They've raised ${raised} of ${goal}. Every donation counts. Donate here: ${url}`;
+  return `https://wa.me/?text=${encodeURIComponent(text)}`;
+}
