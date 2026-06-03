@@ -137,9 +137,9 @@ export default function HomePage() {
           <img
             src="https://images.unsplash.com/photo-1618828665011-0abd973f7bb8?w=1800&q=80"
             alt=""
-            className="w-full h-full object-cover opacity-20"
+            className="w-full h-full object-cover opacity-50"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-dark from-50% via-dark/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-dark/90 from-40% via-dark/50 to-transparent" />
         </div>
 
         <div className="relative w-full grid grid-cols-1 lg:grid-cols-2 min-h-screen">
