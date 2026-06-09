@@ -247,7 +247,7 @@ export default function CampaignsPage() {
 
         {/* Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {Array(12).fill(0).map((_, i) => <CampaignCardSkeleton key={i} />)}
           </div>
         ) : campaigns.length === 0 ? (
@@ -273,7 +273,7 @@ export default function CampaignsPage() {
           </div>
         ) : (
           <>
-            <div className={`grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 transition-opacity duration-200 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 transition-opacity duration-200 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
               {campaigns.map(c => <CampaignCard key={c.id} campaign={c} />)}
             </div>
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MdAccessTime, MdArrowForward } from 'react-icons/md';
+import { MdAccessTime } from 'react-icons/md';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { BLOG_POSTS, BLOG_CATEGORIES } from '../mocks/blogData';
@@ -127,23 +127,6 @@ export default function BlogPage() {
             <p className="text-sm mt-1">Check back soon.</p>
           </div>
         )}
-
-        {/* Newsletter CTA */}
-        <div className="mt-16 rounded-3xl overflow-hidden relative text-center py-16 px-6"
-          style={{ background: 'linear-gradient(135deg, #1a7a4a 0%, #22c55e 100%)' }}>
-          <h3 className="text-white font-black text-2xl sm:text-3xl mb-3">Stay in the Loop</h3>
-          <p className="text-white/80 mb-8 max-w-md mx-auto">Get the latest tips, success stories, and platform updates delivered to your inbox. No spam, ever.</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-5 py-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-white/30"
-            />
-            <button className="bg-white text-primary font-bold px-6 py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 flex-shrink-0">
-              Subscribe <MdArrowForward />
-            </button>
-          </div>
-        </div>
       </div>
 
       <Footer />

@@ -126,7 +126,7 @@ const BADGES = [
 const FAQS = [
   {
     q: 'What fees does Giviit charge?',
-    a: 'Giviit charges a 5% platform fee on each donation received. Paystack separately charges approximately 1.5% + ₦100 per transaction (capped at ₦2,000 for local cards). There are no sign-up fees, listing fees, or hidden charges.',
+    a: 'Giviit charges a 3% platform fee on each donation received, plus a 0.5% fraud protection reserve that goes directly toward securing every campaign and protecting donors. Paystack separately charges approximately 1.5% + ₦100 per transaction (capped at ₦2,000 for local cards). There are no sign-up fees, listing fees, or hidden charges.',
   },
   {
     q: 'How long does identity verification take?',
@@ -166,9 +166,10 @@ function fmtNaira(n) {
 }
 
 function calcFees(goal) {
-  const platformFee = Math.round(goal * 0.05);
+  const platformFee = Math.round(goal * 0.03);
+  const fraudReserve = Math.round(goal * 0.005);
   const paystack = Math.min(Math.round(goal * 0.015 + 100), 2000);
-  return { platformFee, paystack, net: goal - platformFee - paystack };
+  return { platformFee, fraudReserve, paystack, net: goal - platformFee - fraudReserve - paystack };
 }
 
 /* ─── Sub-components ──────────────────────────────────────────────── */
@@ -232,7 +233,7 @@ export default function HowItWorksPage() {
   const [openFaq, setOpenFaq] = useState(null);
   const [goal, setGoal] = useState(100000);
 
-  const { platformFee, paystack, net } = calcFees(goal);
+  const { platformFee, fraudReserve, paystack, net } = calcFees(goal);
   const keepPct = Math.round((net / goal) * 100);
 
   const steps = tab === 'creator' ? CREATOR_STEPS : DONOR_STEPS;
@@ -286,7 +287,7 @@ export default function HowItWorksPage() {
               { v: '₦2.4B+', l: 'Total Raised' },
               { v: '14,200+', l: 'Campaigns Funded' },
               { v: '24–48 hrs', l: 'Avg. Verification Time' },
-              { v: '5%', l: 'Platform Fee Only' },
+              { v: '3%', l: 'Platform Fee' },
             ].map(({ v, l }) => (
               <div key={l} className="text-center">
                 <p className="font-black text-accent text-2xl leading-none">{v}</p>
@@ -409,9 +410,18 @@ export default function HowItWorksPage() {
             <div className="bg-white/5 border border-white/10 rounded-xl px-6 py-4 flex justify-between items-center">
               <div>
                 <p className="text-white/70 font-semibold text-sm">Giviit platform fee</p>
-                <p className="text-white/30 text-xs mt-0.5">5% of donations received</p>
+                <p className="text-white/30 text-xs mt-0.5">3% of donations received</p>
               </div>
               <span className="font-bold text-red-400 text-base">− {fmtNaira(platformFee)}</span>
+            </div>
+
+            {/* Fraud reserve */}
+            <div className="bg-white/5 border border-white/10 rounded-xl px-6 py-4 flex justify-between items-center">
+              <div>
+                <p className="text-white/70 font-semibold text-sm">Fraud protection reserve</p>
+                <p className="text-white/30 text-xs mt-0.5">0.5% — secures every campaign & protects donors</p>
+              </div>
+              <span className="font-bold text-red-400 text-base">− {fmtNaira(fraudReserve)}</span>
             </div>
 
             {/* Paystack fee */}
