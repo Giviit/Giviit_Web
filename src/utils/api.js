@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { mockHandlers } from './mockApi';
 
-const MOCK_MODE = true; // Set to false when backend is ready
+const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === 'true';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',

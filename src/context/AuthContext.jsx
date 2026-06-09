@@ -4,7 +4,7 @@ import { MOCK_CREATOR_USER, MOCK_ADMIN_USER } from '../mocks/data';
 
 const AuthContext = createContext(null);
 
-const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === 'true' || true; // Always mock for demo
+const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === 'true';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

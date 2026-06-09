@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
-import { MdPeople, MdVerified, MdAccessTime, MdBolt, MdCake, MdCelebration, MdCheck } from 'react-icons/md';
+import { Users, Clock, Zap, BadgeCheck, Cake, PartyPopper, Check } from 'lucide-react';
 import { CountdownBadge } from './CountdownTimer';
 import { formatCurrency, formatDaysLeft, formatProgress } from '../utils/formatters';
 
 export default function CampaignCard({ campaign }) {
-  const pct = formatProgress(campaign.raised_amount, campaign.goal_amount);
+  const pct = formatProgress(campaign.raised_amount ?? campaign.amount_raised, campaign.goal_amount);
   const isGoalReached = pct >= 100;
   const isUrgentWithTimer = campaign.is_urgent && campaign.urgency_deadline;
 
@@ -17,10 +17,10 @@ export default function CampaignCard({ campaign }) {
   return (
     <Link
       to={`/campaign/${campaign.slug}`}
-      className="relative bg-white rounded-xl overflow-hidden flex flex-col group border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200"
+      className="relative bg-white rounded-2xl overflow-hidden flex flex-col group border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-200"
     >
-      {/* ── Image ── */}
-      <div className="relative h-32 sm:h-44 overflow-hidden bg-gray-100 flex-shrink-0">
+      {/* Image */}
+      <div className="relative h-44 sm:h-48 overflow-hidden bg-gray-100 flex-shrink-0">
         {campaign.cover_image ? (
           <img
             src={campaign.cover_image}
@@ -36,29 +36,29 @@ export default function CampaignCard({ campaign }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
 
         {/* Top-left: category + urgent */}
-        <div className="absolute top-2 left-2 flex items-center gap-1">
+        <div className="absolute top-2.5 left-2.5 flex items-center gap-1 flex-wrap">
           <span className="bg-white/90 backdrop-blur-sm text-gray-700 text-[10px] px-2 py-0.5 rounded-full capitalize font-semibold shadow-sm leading-tight">
             {campaign.category}
           </span>
           {isUrgentWithTimer && (
             <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5 leading-tight">
-              <MdBolt className="text-[10px]" /> Urgent
+              <Zap size={8} /> Urgent
             </span>
           )}
         </div>
 
         {/* Top-right: countdown */}
         {isUrgentWithTimer && (
-          <div className="absolute top-2 right-2">
+          <div className="absolute top-2.5 right-2.5">
             <CountdownBadge deadline={campaign.urgency_deadline} />
           </div>
         )}
 
         {/* Bottom-left: trust badges */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-1 flex-wrap">
+        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 flex-wrap">
           {campaign.is_verified && (
             <span className="bg-green-600/90 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5 leading-tight">
-              <MdVerified className="text-[10px]" /> Verified
+              <BadgeCheck size={8} /> Verified
             </span>
           )}
           {campaign.guarantor_status === 'vouched' && (
@@ -68,16 +68,16 @@ export default function CampaignCard({ campaign }) {
           )}
           {campaign.is_birthday && (
             <span className="bg-pink-500/90 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold inline-flex items-center gap-0.5 leading-tight">
-              <MdCake className="text-[10px]" /> Bday
+              <Cake size={8} /> Bday
             </span>
           )}
         </div>
 
         {/* Bottom-right: % funded */}
-        <div className="absolute bottom-2 right-2">
+        <div className="absolute bottom-2.5 right-2.5">
           {isGoalReached ? (
             <span className="bg-green-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black shadow inline-flex items-center gap-0.5 leading-tight">
-              <MdCheck className="text-[10px]" /> Met
+              <Check size={8} /> Met
             </span>
           ) : (
             <span className={`text-white text-[9px] px-2 py-0.5 rounded-full font-black shadow leading-tight ${
@@ -89,25 +89,25 @@ export default function CampaignCard({ campaign }) {
         </div>
       </div>
 
-      {/* ── Content ── */}
-      <div className="p-2.5 sm:p-3.5 flex flex-col flex-1 gap-2">
+      {/* Content */}
+      <div className="p-4 flex flex-col flex-1 gap-2.5">
 
         {/* Title */}
-        <h3 className="font-bold text-gray-900 text-[11px] sm:text-sm leading-tight line-clamp-2 group-hover:text-green-700 transition-colors duration-200">
-          {campaign.is_birthday && <MdCake className="inline mr-0.5 text-pink-500 text-xs" />}
+        <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 group-hover:text-green-700 transition-colors duration-200">
+          {campaign.is_birthday && <Cake size={12} className="inline mr-1 text-pink-500" />}
           {campaign.title}
         </h3>
 
         {campaign.is_birthday && birthdayDays !== null && (
           <p className="text-[10px] text-pink-500 font-semibold flex items-center gap-0.5 -mt-1">
             {birthdayDays <= 0
-              ? <><MdCelebration className="text-xs" /> Today!</>
-              : <><MdCake className="text-xs" /> In {birthdayDays}d</>}
+              ? <><PartyPopper size={10} /> Today!</>
+              : <><Cake size={10} /> In {birthdayDays}d</>}
           </p>
         )}
 
         {/* Progress bar */}
-        <div className="w-full bg-gray-100 rounded-full h-1 sm:h-1.5 overflow-hidden">
+        <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
           <div
             className={`h-full rounded-full ${barColor} transition-all duration-500`}
             style={{ width: `${Math.min(pct, 100)}%` }}
@@ -115,21 +115,21 @@ export default function CampaignCard({ campaign }) {
         </div>
 
         {/* Stats */}
-        <div className="mt-auto pt-1.5 border-t border-gray-50">
-          <p className="text-green-700 font-black text-xs sm:text-sm leading-none">
-            {formatCurrency(campaign.raised_amount)}
+        <div className="mt-auto pt-2 border-t border-gray-50">
+          <p className="text-green-700 font-black text-sm leading-none">
+            {formatCurrency(campaign.raised_amount ?? campaign.amount_raised)}
           </p>
-          <div className="flex items-center justify-between mt-1">
-            <p className="text-gray-400 text-[10px]">
+          <div className="flex items-center justify-between mt-1.5">
+            <p className="text-gray-400 text-[11px]">
               of {formatCurrency(campaign.goal_amount)}
             </p>
-            <div className="flex items-center gap-1.5">
-              <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
-                <MdPeople className="text-[9px]" />
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-0.5 text-[11px] text-gray-400">
+                <Users size={10} />
                 {(campaign.donor_count || 0).toLocaleString()}
               </span>
-              <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
-                <MdAccessTime className="text-[9px]" />
+              <span className="flex items-center gap-0.5 text-[11px] text-gray-400">
+                <Clock size={10} />
                 {formatDaysLeft(campaign.deadline)}
               </span>
             </div>

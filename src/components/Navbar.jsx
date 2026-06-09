@@ -1,18 +1,18 @@
 ﻿import { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
-  MdMenu, MdClose, MdPerson, MdDashboard, MdLogout,
-  MdExpandMore, MdCampaign, MdInfo, MdArticle, MdLightbulb, MdPeople,
-} from 'react-icons/md';
+  Menu, X, User, LayoutDashboard, LogOut,
+  ChevronDown, Megaphone, Info, BookOpen, Lightbulb, Users,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import GiviitLogo from './GiviitLogo';
 
 const EXPLORE_LINKS = [
-  { to: '/campaigns', icon: MdCampaign, label: 'Browse Campaigns', desc: 'Find a cause to support' },
-  { to: '/how-it-works', icon: MdLightbulb, label: 'How It Works', desc: 'For creators and donors' },
-  { to: '/blog', icon: MdArticle, label: 'Blog & News', desc: 'Tips, stories, and updates' },
-  { to: '/about', icon: MdInfo, label: 'About Us', desc: 'Our mission and team' },
+  { to: '/campaigns', icon: Megaphone, label: 'Browse Campaigns', desc: 'Find a cause to support' },
+  { to: '/how-it-works', icon: Lightbulb, label: 'How It Works', desc: 'For creators and donors' },
+  { to: '/blog', icon: BookOpen, label: 'Blog & News', desc: 'Tips, stories, and updates' },
+  { to: '/about', icon: Info, label: 'About Us', desc: 'Our mission and team' },
 ];
 
 export default function Navbar() {
@@ -57,7 +57,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link to="/" className="flex items-center flex-shrink-0">
-            <GiviitLogo size={30} variant="flat" showWordmark wordmarkLight={false} />
+            <GiviitLogo size={32} variant="flat" showWordmark wordmarkLight={false} />
           </Link>
 
           {/* Desktop nav */}
@@ -84,7 +84,7 @@ export default function Navbar() {
                 onClick={() => setExploreOpen(!exploreOpen)}
                 className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${exploreOpen ? 'text-primary bg-primary/5' : 'text-gray-700 hover:text-primary hover:bg-gray-50'}`}
               >
-                More <MdExpandMore className={`text-base transition-transform duration-200 ${exploreOpen ? 'rotate-180' : ''}`} />
+                More <ChevronDown size={16} className={`transition-transform duration-200 ${exploreOpen ? 'rotate-180' : ''}`} />
               </button>
               {exploreOpen && (
                 <div className="absolute left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden">
@@ -110,7 +110,7 @@ export default function Navbar() {
                   <div className="px-4 pt-2 pb-1 border-t border-gray-50 mt-1">
                     <Link to="/about" onClick={() => setExploreOpen(false)}
                       className="flex items-center gap-2 text-xs text-gray-500 hover:text-primary transition-colors py-1">
-                      <MdPeople className="text-sm" /> Meet the Team
+                      <Users size={14} /> Meet the Team
                     </Link>
                   </div>
                 </div>
@@ -139,23 +139,23 @@ export default function Navbar() {
                     {user.avatar_url ? (
                       <img src={user.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover" />
                     ) : (
-                      <MdPerson className="text-white text-sm" />
+                      <User size={14} className="text-white" />
                     )}
                   </div>
                   <span className="text-sm font-medium text-dark max-w-24 truncate">{user.full_name || 'Account'}</span>
-                  <MdExpandMore className={`text-gray-400 text-base transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={16} className={`text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
                     <Link to="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                      <MdDashboard className="text-primary" /> Dashboard
+                      <LayoutDashboard size={16} className="text-primary" /> Dashboard
                     </Link>
                     <Link to="/dashboard/profile" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                      <MdPerson className="text-primary" /> Profile
+                      <User size={16} className="text-primary" /> Profile
                     </Link>
                     <hr className="my-1 border-gray-100" />
                     <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left">
-                      <MdLogout /> Sign Out
+                      <LogOut size={16} /> Sign Out
                     </button>
                   </div>
                 )}
@@ -172,9 +172,9 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile hamburger */}
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
-            {mobileOpen ? <MdClose className="text-2xl" /> : <MdMenu className="text-2xl" />}
+          {/* Mobile hamburger — right side */}
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center">
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </div>
@@ -204,13 +204,13 @@ export default function Navbar() {
             {user ? (
               <>
                 <NavLink to="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 py-3 px-3 rounded-xl text-sm font-medium text-gray-700">
-                  <MdDashboard className="text-primary" /> Dashboard
+                  <LayoutDashboard size={16} className="text-primary" /> Dashboard
                 </NavLink>
                 <NavLink to="/dashboard/profile" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 py-3 px-3 rounded-xl text-sm font-medium text-gray-700">
-                  <MdPerson className="text-primary" /> Profile
+                  <User size={16} className="text-primary" /> Profile
                 </NavLink>
                 <button onClick={handleLogout} className="flex items-center gap-2 py-3 px-3 rounded-xl text-sm font-medium text-red-500 w-full text-left">
-                  <MdLogout /> Sign Out
+                  <LogOut size={16} /> Sign Out
                 </button>
               </>
             ) : (
