@@ -1,0 +1,16 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" rx="44" fill="#1a7a4a"/>
+  <!-- G letterform (5× scale) -->
+  <path d="M 130 75 A 50 50 0 1 0 130 135 L 130 105 L 95 105"
+    stroke="white" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Stem up from G opening -->
+  <line x1="130" y1="75" x2="130" y2="50" stroke="white" stroke-width="10" stroke-linecap="round"/>
+  <!-- Fork left — left "i" stem -->
+  <line x1="130" y1="50" x2="112.5" y2="35" stroke="white" stroke-width="10" stroke-linecap="round"/>
+  <!-- Fork right — right "i" stem -->
+  <line x1="130" y1="50" x2="150" y2="35" stroke="white" stroke-width="10" stroke-linecap="round"/>
+  <!-- Left "i" dot -->
+  <circle cx="112.5" cy="27.5" r="9" fill="white"/>
+  <!-- Right "i" dot -->
+  <circle cx="150" cy="27.5" r="9" fill="white"/>
+</svg>
