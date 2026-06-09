@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../utils/api';
-import { supabase } from '../utils/supabaseClient';
 import { MOCK_CREATOR_USER, MOCK_ADMIN_USER } from '../mocks/data';
 
 const AuthContext = createContext(null);
@@ -78,11 +77,7 @@ export function AuthProvider({ children }) {
       return mockUser;
     }
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-    if (error) throw error;
+    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/google`;
   };
 
   const logout = async () => {

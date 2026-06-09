@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../utils/supabaseClient';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
@@ -8,39 +7,39 @@ import toast from 'react-hot-toast';
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
   const { setUser } = useAuth();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const handleCallback = async () => {
+      const token = searchParams.get('token');
+
+      if (!token) {
+        toast.error('Google sign-in failed. Please try again.');
+        navigate('/login');
+        return;
+      }
+
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-
-        if (error || !session) {
-          toast.error('Google sign-in failed. Please try again.');
-          navigate('/login');
-          return;
-        }
-
-        // Sync with backend — creates profile if first time, returns our JWT
-        const res = await api.post('/auth/google/sync', {}, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-
-        const { token, user } = res.data;
         localStorage.setItem('token', token);
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        const res = await api.get('/auth/me');
+        const user = res.data.user;
         setUser(user);
 
         const firstName = user.full_name?.split(' ')[0];
         toast.success(`Welcome${firstName ? `, ${firstName}` : ''}!`);
         navigate('/dashboard', { replace: true });
       } catch {
+        localStorage.removeItem('token');
+        delete api.defaults.headers.common['Authorization'];
         toast.error('Sign-in failed. Please try again.');
         navigate('/login');
       }
     };
 
     handleCallback();
-  }, [navigate, setUser]);
+  }, [navigate, setUser, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

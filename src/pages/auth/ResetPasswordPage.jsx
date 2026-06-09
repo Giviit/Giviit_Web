@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { MdLock, MdVisibility, MdVisibilityOff, MdArrowBack, MdCheckCircle } from 'react-icons/md';
-import { supabase } from '../../utils/supabaseClient';
+import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import GiviitLogo from '../../components/GiviitLogo';
 
@@ -11,18 +11,16 @@ export default function ResetPasswordPage() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
-  const [checking, setChecking] = useState(true);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        toast.error('Invalid or expired reset link. Please request a new one.');
-        navigate('/forgot-password');
-      }
-      setChecking(false);
-    });
-  }, [navigate]);
+    if (!token) {
+      toast.error('Invalid or expired reset link. Please request a new one.');
+      navigate('/forgot-password');
+    }
+  }, [token, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,24 +29,17 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      await api.post('/auth/reset-password', { token, password });
       setDone(true);
       toast.success('Password updated successfully!');
     } catch (err) {
-      toast.error(err.message || 'Failed to reset password. Please request a new link.');
+      toast.error(err.response?.data?.error || 'Failed to reset password. Please request a new link.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (!token) return null;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
