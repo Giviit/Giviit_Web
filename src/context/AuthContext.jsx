@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../utils/api';
+import { supabase } from '../utils/supabaseClient';
 import { MOCK_CREATOR_USER, MOCK_ADMIN_USER } from '../mocks/data';
 
 const AuthContext = createContext(null);
@@ -69,6 +70,21 @@ export function AuthProvider({ children }) {
     return res.data;
   };
 
+  const loginWithGoogle = async () => {
+    if (MOCK_MODE) {
+      const mockUser = { ...MOCK_CREATOR_USER, email: 'google@demo.com', full_name: 'Google User' };
+      localStorage.setItem('mock_user', JSON.stringify(mockUser));
+      setUser(mockUser);
+      return mockUser;
+    }
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) throw error;
+  };
+
   const logout = async () => {
     if (MOCK_MODE) {
       localStorage.removeItem('mock_user');
@@ -82,7 +98,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register, setUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, loginWithGoogle, setUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,7 @@
 ﻿import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { MdPerson, MdEmail, MdPhone, MdLock, MdVisibility, MdVisibilityOff, MdArrowForward } from 'react-icons/md';
+import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import GiviitLogo from '../../components/GiviitLogo';
@@ -16,7 +17,7 @@ export default function RegisterPage() {
   const [agreed, setAgreed] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { register, login } = useAuth();
+  const { register, login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (field) => (e) => setForm(p => ({ ...p, [field]: e.target.value }));
@@ -104,7 +105,28 @@ export default function RegisterPage() {
           </Link>
 
           <h1 className="text-2xl font-black text-dark mb-1">Create your account</h1>
-          <p className="text-gray-500 text-sm mb-7">Start fundraising for free today. No credit card needed.</p>
+          <p className="text-gray-500 text-sm mb-6">Start fundraising for free today. No credit card needed.</p>
+
+          {/* Google sign-up */}
+          <button
+            type="button"
+            onClick={async () => {
+              setLoading(true);
+              try { await loginWithGoogle(); }
+              catch { toast.error('Google sign-up failed. Please try again.'); setLoading(false); }
+            }}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-dark font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-50 mb-4"
+          >
+            <FcGoogle className="text-xl" />
+            Sign up with Google
+          </button>
+
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-xs text-gray-400 font-medium">or register with email</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {[

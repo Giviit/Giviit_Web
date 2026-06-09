@@ -1,6 +1,7 @@
 ﻿import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { MdEmail, MdLock, MdVisibility, MdVisibilityOff, MdArrowForward } from 'react-icons/md';
+import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import GiviitLogo from '../../components/GiviitLogo';
@@ -15,7 +16,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
@@ -153,6 +154,21 @@ export default function LoginPage() {
               ))}
             </div>
           </div>
+
+          {/* Google sign-in */}
+          <button
+            type="button"
+            onClick={async () => {
+              setLoading(true);
+              try { await loginWithGoogle(); }
+              catch { toast.error('Google sign-in failed. Please try again.'); setLoading(false); }
+            }}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-dark font-semibold py-3 rounded-xl text-sm transition-all disabled:opacity-50 mb-4"
+          >
+            <FcGoogle className="text-xl" />
+            Continue with Google
+          </button>
 
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-gray-200" />
