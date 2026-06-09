@@ -8,7 +8,7 @@ export default function ShareButtons({ campaign }) {
   const pageUrl = window.location.href;
   const waUrl = buildWhatsAppUrl(campaign, window.location.origin);
   const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`;
-  const twUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Support "${campaign.title}" on Givia`)}&url=${encodeURIComponent(pageUrl)}`;
+  const twUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Support "${campaign.title}" on Giviit`)}&url=${encodeURIComponent(pageUrl)}`;
 
   const copyLink = () => {
     navigator.clipboard.writeText(pageUrl);
@@ -55,3 +55,4 @@ export default function ShareButtons({ campaign }) {
     </div>
   );
 }
+

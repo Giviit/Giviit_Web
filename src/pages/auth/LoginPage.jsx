@@ -1,9 +1,9 @@
 ﻿import { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { MdEmail, MdLock, MdVisibility, MdVisibilityOff, MdArrowForward } from 'react-icons/md';
-import { FaWhatsapp } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import GiviitLogo from '../../components/GiviitLogo';
 
 const DEMO_ACCOUNTS = [
   { label: 'Creator Account', email: 'creator@demo.com', password: 'demo123', color: 'bg-primary/10 text-primary border-primary/20' },
@@ -28,7 +28,12 @@ export default function LoginPage() {
       toast.success('Welcome back!');
       navigate(from, { replace: true });
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Invalid email or password');
+      const code = err.response?.data?.code;
+      if (code === 'TERMS_NOT_AGREED') {
+        toast.error('Your account requires you to accept our Terms of Service. Please contact support@giviit.ng.', { duration: 7000 });
+      } else {
+        toast.error(err.response?.data?.error || 'Invalid email or password');
+      }
     } finally {
       setLoading(false);
     }
@@ -65,12 +70,10 @@ export default function LoginPage() {
 
         <div className="relative flex flex-col h-full px-12 py-10">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl flex items-center justify-center">
-              <span className="text-white font-black text-sm">CF</span>
-            </div>
+          <Link to="/" className="flex items-center gap-3">
+            <GiviitLogo size={40} variant="white" />
             <div>
-              <p className="text-white font-black text-lg leading-none">Givia</p>
+              <p className="text-white font-black text-lg leading-none">Giviit</p>
               <p className="text-white/60 text-[10px] tracking-widest font-medium">TOGETHER WE RISE</p>
             </div>
           </Link>
@@ -105,7 +108,7 @@ export default function LoginPage() {
           {/* Bottom testimonial */}
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-5">
             <p className="text-white/90 text-sm leading-relaxed mb-3">
-              "I raised ₦2.3M in just 10 days for my surgery. Givia literally saved my life. The WhatsApp sharing feature made all the difference."
+              "I raised ₦2.3M in just 10 days for my surgery. Giviit literally saved my life. Sharing my campaign link with my community made all the difference."
             </p>
             <div className="flex items-center gap-3">
               <img
@@ -126,11 +129,8 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12 bg-gray-50 overflow-y-auto">
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
-          <Link to="/" className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
-              <span className="text-white font-black text-sm">CF</span>
-            </div>
-            <span className="font-black text-dark text-lg">Givia</span>
+          <Link to="/" className="lg:hidden flex items-center gap-2.5 mb-8">
+            <GiviitLogo size={32} variant="green" showWordmark wordmarkLight={false} />
           </Link>
 
           <h1 className="text-2xl font-black text-dark mb-1">Welcome back</h1>
@@ -219,3 +219,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

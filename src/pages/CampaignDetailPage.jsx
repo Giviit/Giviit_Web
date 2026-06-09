@@ -271,8 +271,8 @@ export default function CampaignDetailPage() {
               )}
             </div>
 
-            {/* Prayer Wall */}
-            {donations.some(d => d.prayer && d.show_prayer !== false) && (
+            {/* Prayer Wall — only shown when creator enabled it */}
+            {campaign.prayer_wall_enabled && donations.some(d => d.prayer && d.show_prayer !== false) && (
               <PrayerWall donations={donations} />
             )}
 

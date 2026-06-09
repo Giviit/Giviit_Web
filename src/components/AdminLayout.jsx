@@ -14,6 +14,7 @@ import {
 } from 'react-icons/md';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import GiviitLogo from './GiviitLogo';
 
 const NAV_ITEMS = [
   { to: '/admin', icon: MdDashboard, label: 'Dashboard', end: true },
@@ -44,12 +45,10 @@ export default function AdminLayout({ children }) {
   const Sidebar = () => (
     <aside className="w-64 flex-shrink-0 flex flex-col h-full bg-white border-r border-gray-100">
       <div className="px-5 py-5 border-b border-gray-100">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-white font-black text-sm">CF</span>
-          </div>
+        <Link to="/" className="flex items-center gap-2.5">
+          <GiviitLogo size={32} variant="green" />
           <div>
-            <span className="font-black text-dark text-sm">Givia</span>
+            <span className="font-black text-dark text-sm">Giviit</span>
             <span className="flex items-center gap-1 text-[10px] text-primary font-semibold">
               <MdAdminPanelSettings className="text-xs" /> Admin Panel
             </span>
@@ -121,3 +120,4 @@ export default function AdminLayout({ children }) {
     </div>
   );
 }
+

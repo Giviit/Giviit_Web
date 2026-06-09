@@ -1,0 +1,22 @@
+<svg width="520" height="120" viewBox="0 0 520 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon (green bg) -->
+  <rect width="120" height="120" rx="26" fill="#1a7a4a"/>
+  <!-- G letterform (3× scale) -->
+  <path d="M 78 45 A 30 30 0 1 0 78 81 L 78 63 L 57 63"
+    stroke="white" stroke-width="8.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Stem -->
+  <line x1="78" y1="45" x2="78" y2="30" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  <!-- Fork left -->
+  <line x1="78" y1="30" x2="67.5" y2="21" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  <!-- Fork right -->
+  <line x1="78" y1="30" x2="90" y2="21" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  <!-- Left dot -->
+  <circle cx="67.5" cy="16.5" r="5.4" fill="white"/>
+  <!-- Right dot -->
+  <circle cx="90" cy="16.5" r="5.4" fill="white"/>
+  <!-- Wordmark: Giv (dark) + ii (amber) + t (dark) -->
+  <text x="148" y="83" font-family="'Inter', system-ui, -apple-system, sans-serif"
+    font-weight="900" font-size="72" letter-spacing="-2">
+    <tspan fill="#0f1f0f">Giv</tspan><tspan fill="#f5a623">ii</tspan><tspan fill="#0f1f0f">t</tspan>
+  </text>
+</svg>

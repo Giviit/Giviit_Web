@@ -12,40 +12,15 @@ export default function CampaignCard({ campaign }) {
     ? Math.ceil((new Date(campaign.birthday_date) - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
 
-  const leftAccent = isUrgentWithTimer
-    ? 'before:bg-red-500'
-    : campaign.is_birthday
-      ? 'before:bg-pink-400'
-      : isGoalReached
-        ? 'before:bg-green-500'
-        : 'before:bg-transparent group-hover:before:bg-green-500';
-
-  const barColor = isUrgentWithTimer
-    ? 'from-red-500 to-red-600'
-    : isGoalReached
-      ? 'from-green-400 to-green-600'
-      : 'from-green-500 to-green-700';
-
-  const barGlow = isUrgentWithTimer
-    ? '0 0 10px rgba(239,68,68,0.45)'
-    : isGoalReached
-      ? '0 0 10px rgba(34,197,94,0.45)'
-      : 'none';
+  const barColor = isUrgentWithTimer ? 'bg-red-500' : 'bg-primary';
 
   return (
     <Link
       to={`/campaign/${campaign.slug}`}
-      className={`
-        relative bg-white rounded-2xl overflow-hidden flex flex-col group
-        shadow-sm hover:shadow-xl
-        transition-all duration-300 hover:-translate-y-1
-        before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-2xl before:transition-colors before:duration-300
-        ${leftAccent}
-        ${isUrgentWithTimer ? 'ring-1 ring-red-300' : campaign.is_birthday ? 'ring-1 ring-pink-200' : 'ring-1 ring-gray-100'}
-      `}
+      className="relative bg-white rounded-xl overflow-hidden flex flex-col group border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200"
     >
       {/* ── Image ── */}
-      <div className="relative h-52 overflow-hidden bg-gray-100 flex-shrink-0">
+      <div className="relative h-32 sm:h-44 overflow-hidden bg-gray-100 flex-shrink-0">
         {campaign.cover_image ? (
           <img
             src={campaign.cover_image}
@@ -54,59 +29,58 @@ export default function CampaignCard({ campaign }) {
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
-            <span className="text-gray-300 text-sm">No image</span>
+            <span className="text-gray-300 text-xs">No image</span>
           </div>
         )}
 
-        {/* gradient scrim — bottom only */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
 
-        {/* Top-left: category pill + urgent icon */}
-        <div className="absolute top-3 left-3 flex items-center gap-1.5">
-          <span className="bg-white/90 backdrop-blur-sm text-gray-700 text-[11px] px-2.5 py-0.5 rounded-full capitalize font-semibold shadow-sm">
+        {/* Top-left: category + urgent */}
+        <div className="absolute top-2 left-2 flex items-center gap-1">
+          <span className="bg-white/90 backdrop-blur-sm text-gray-700 text-[10px] px-2 py-0.5 rounded-full capitalize font-semibold shadow-sm leading-tight">
             {campaign.category}
           </span>
           {isUrgentWithTimer && (
-            <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
-              <MdBolt className="text-[11px]" /> Urgent
+            <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5 leading-tight">
+              <MdBolt className="text-[10px]" /> Urgent
             </span>
           )}
         </div>
 
-        {/* Top-right: countdown badge */}
+        {/* Top-right: countdown */}
         {isUrgentWithTimer && (
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-2 right-2">
             <CountdownBadge deadline={campaign.urgency_deadline} />
           </div>
         )}
 
         {/* Bottom-left: trust badges */}
-        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 flex-wrap">
+        <div className="absolute bottom-2 left-2 flex items-center gap-1 flex-wrap">
           {campaign.is_verified && (
-            <span className="bg-green-600/90 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-0.5">
-              <MdVerified className="text-[11px]" /> Verified
+            <span className="bg-green-600/90 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5 leading-tight">
+              <MdVerified className="text-[10px]" /> Verified
             </span>
           )}
           {campaign.guarantor_status === 'vouched' && (
-            <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+            <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold leading-tight">
               Vouched
             </span>
           )}
           {campaign.is_birthday && (
-            <span className="bg-pink-500/90 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full font-bold inline-flex items-center gap-0.5">
-              <MdCake className="text-xs" /> Birthday
+            <span className="bg-pink-500/90 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold inline-flex items-center gap-0.5 leading-tight">
+              <MdCake className="text-[10px]" /> Bday
             </span>
           )}
         </div>
 
-        {/* Bottom-right: % funded pill */}
-        <div className="absolute bottom-3 right-3">
+        {/* Bottom-right: % funded */}
+        <div className="absolute bottom-2 right-2">
           {isGoalReached ? (
-            <span className="bg-green-500 text-white text-[11px] px-2.5 py-1 rounded-full font-black tracking-wide shadow inline-flex items-center gap-0.5">
-              <MdCheck className="text-xs" /> Goal Met
+            <span className="bg-green-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black shadow inline-flex items-center gap-0.5 leading-tight">
+              <MdCheck className="text-[10px]" /> Met
             </span>
           ) : (
-            <span className={`text-white text-[11px] px-2.5 py-1 rounded-full font-black shadow ${
+            <span className={`text-white text-[9px] px-2 py-0.5 rounded-full font-black shadow leading-tight ${
               pct >= 75 ? 'bg-green-600' : pct >= 40 ? 'bg-green-700/80' : 'bg-gray-700/80'
             }`}>
               {pct}%
@@ -116,52 +90,49 @@ export default function CampaignCard({ campaign }) {
       </div>
 
       {/* ── Content ── */}
-      <div className="p-4 flex flex-col flex-1 gap-3">
+      <div className="p-2.5 sm:p-3.5 flex flex-col flex-1 gap-2">
 
         {/* Title */}
-        <div>
-          <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 group-hover:text-green-700 transition-colors duration-200">
-            {campaign.is_birthday && <MdCake className="inline mr-1 text-pink-500 text-sm" />}
-            {campaign.title}
-          </h3>
-          {campaign.is_birthday && birthdayDays !== null && (
-            <p className="text-[11px] text-pink-500 font-semibold mt-1 flex items-center gap-1">
-              {birthdayDays <= 0
-                ? <><MdCelebration className="text-sm" /> Today is their birthday!</>
-                : <><MdCake className="text-sm" /> Birthday in {birthdayDays} day{birthdayDays !== 1 ? 's' : ''}</>}
-            </p>
-          )}
-        </div>
+        <h3 className="font-bold text-gray-900 text-[11px] sm:text-sm leading-tight line-clamp-2 group-hover:text-green-700 transition-colors duration-200">
+          {campaign.is_birthday && <MdCake className="inline mr-0.5 text-pink-500 text-xs" />}
+          {campaign.title}
+        </h3>
+
+        {campaign.is_birthday && birthdayDays !== null && (
+          <p className="text-[10px] text-pink-500 font-semibold flex items-center gap-0.5 -mt-1">
+            {birthdayDays <= 0
+              ? <><MdCelebration className="text-xs" /> Today!</>
+              : <><MdCake className="text-xs" /> In {birthdayDays}d</>}
+          </p>
+        )}
 
         {/* Progress bar */}
-        <div className="space-y-1.5">
-          <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-            <div
-              className={`h-2.5 rounded-full bg-gradient-to-r ${barColor} transition-all duration-700 ease-out`}
-              style={{ width: `${Math.min(pct, 100)}%`, boxShadow: barGlow }}
-            />
-          </div>
+        <div className="w-full bg-gray-100 rounded-full h-1 sm:h-1.5 overflow-hidden">
+          <div
+            className={`h-full rounded-full ${barColor} transition-all duration-500`}
+            style={{ width: `${Math.min(pct, 100)}%` }}
+          />
         </div>
 
         {/* Stats */}
-        <div className="flex items-end justify-between mt-auto pt-1 border-t border-gray-50">
-          <div>
-            <p className="text-green-700 font-black text-base leading-none">
-              {formatCurrency(campaign.raised_amount)}
-            </p>
-            <p className="text-gray-400 text-[11px] mt-0.5">
+        <div className="mt-auto pt-1.5 border-t border-gray-50">
+          <p className="text-green-700 font-black text-xs sm:text-sm leading-none">
+            {formatCurrency(campaign.raised_amount)}
+          </p>
+          <div className="flex items-center justify-between mt-1">
+            <p className="text-gray-400 text-[10px]">
               of {formatCurrency(campaign.goal_amount)}
             </p>
-          </div>
-          <div className="text-right space-y-0.5">
-            <p className="flex items-center justify-end gap-1 text-[11px] text-gray-500">
-              <MdPeople className="text-gray-400 text-xs" />
-              {(campaign.donor_count || 0).toLocaleString()} donors
-            </p>
-            <p className="flex items-center justify-end gap-1 text-[11px] text-gray-400">
-              <MdAccessTime className="text-gray-300 text-xs" />
-              {formatDaysLeft(campaign.deadline)}
-            </p>
+            <div className="flex items-center gap-1.5">
+              <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
+                <MdPeople className="text-[9px]" />
+                {(campaign.donor_count || 0).toLocaleString()}
+              </span>
+              <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
+                <MdAccessTime className="text-[9px]" />
+                {formatDaysLeft(campaign.deadline)}
+              </span>
+            </div>
           </div>
         </div>
       </div>

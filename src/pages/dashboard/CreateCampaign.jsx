@@ -1,5 +1,5 @@
 ﻿import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   MdCloudUpload, MdClose, MdAdd, MdArrowForward, MdArrowBack,
   MdShield, MdVerified, MdPeople, MdFlag, MdBolt, MdCake,
@@ -38,7 +38,7 @@ export default function CreateCampaign() {
 
   // ── Step 1: Identity ──
   const [identity, setIdentity] = useState({
-    nin: '', bvn: '', selfieFile: null, selfiePreview: null,
+    nin: '', selfieFile: null, selfiePreview: null,
     idDocFile: null, idDocPreview: null, agreed: false,
   });
 
@@ -63,9 +63,10 @@ export default function CreateCampaign() {
     guarantor_name: '', guarantor_email: '', guarantor_phone: '', guarantor_relationship: '',
   });
 
-  // ── Step 6: Team + Birthday ──
+  // ── Step 6: Team + Birthday + Prayer Wall ──
   const [coOwnerEmails, setCoOwnerEmails] = useState(['']);
   const [birthday, setBirthday] = useState({ is_birthday: false, birthday_date: '', birthday_person_name: '' });
+  const [prayerWallEnabled, setPrayerWallEnabled] = useState(false);
 
   const set = (setter) => (field) => (e) => {
     const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -121,7 +122,7 @@ export default function CreateCampaign() {
 
   // ── Step validation ──
   const canProceed = () => {
-    if (step === 1) return identity.nin.length >= 11 && identity.bvn.length >= 11 && identity.agreed;
+    if (step === 1) return identity.nin.length >= 11 && identity.agreed;
     if (step === 2) return form.title && form.category && form.goal_amount && form.description && form.story;
     if (step === 3) return !!coverImage || !!coverPreview;
     return true;
@@ -134,7 +135,6 @@ export default function CreateCampaign() {
       // Upload identity docs (mock — just log)
       await api.post('/auth/verify-identity', {
         nin: identity.nin,
-        bvn: identity.bvn,
       });
 
       // Upload images
@@ -147,6 +147,7 @@ export default function CreateCampaign() {
       const payload = {
         ...form,
         ...birthday,
+        prayer_wall_enabled: prayerWallEnabled,
         goal_amount: Number(form.goal_amount),
         cover_image,
         gallery: galleryUrls,
@@ -214,49 +215,31 @@ export default function CreateCampaign() {
         {/* ── STEP 1: Identity Verification ── */}
         {step === 1 && (
           <div className="space-y-5">
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-              <div className="flex items-start gap-3">
-                <MdShield className="text-amber-600 text-xl flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-bold text-amber-800">Identity Verification Required</p>
-                  <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
-                    To protect donors and prevent fraud, we require all campaign creators to verify their identity before publishing. Your information is encrypted and never shared publicly.
-                  </p>
-                </div>
+            <div className="border-l-4 border-primary pl-4 py-1">
+              <p className="text-sm font-semibold text-dark">Identity Verification Required</p>
+              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                To protect donors and prevent fraud, we require all campaign creators to verify their identity before publishing.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4 shadow-sm">
+              <h3 className="font-bold text-dark">NIN Verification</h3>
+
+              <div>
+                <label className="block text-sm font-semibold text-dark mb-1.5">NIN (National ID Number) <span className="text-red-500">*</span></label>
+                <input
+                  value={identity.nin}
+                  onChange={e => setIdentity(p => ({ ...p, nin: e.target.value.replace(/\D/g,'').slice(0,11) }))}
+                  placeholder="11-digit NIN"
+                  maxLength={11}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono tracking-widest"
+                />
+                <p className="text-xs text-gray-400 mt-1">{identity.nin.length}/11 digits</p>
               </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4 shadow-sm">
-              <h3 className="font-bold text-dark flex items-center gap-2"><MdBadge className="text-primary" /> NIN & BVN Verification</h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-dark mb-1.5">NIN (National ID Number) <span className="text-red-500">*</span></label>
-                  <input
-                    value={identity.nin}
-                    onChange={e => setIdentity(p => ({ ...p, nin: e.target.value.replace(/\D/g,'').slice(0,11) }))}
-                    placeholder="11-digit NIN"
-                    maxLength={11}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono tracking-widest"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">{identity.nin.length}/11 digits</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-dark mb-1.5">BVN (Bank Verification Number) <span className="text-red-500">*</span></label>
-                  <input
-                    value={identity.bvn}
-                    onChange={e => setIdentity(p => ({ ...p, bvn: e.target.value.replace(/\D/g,'').slice(0,11) }))}
-                    placeholder="11-digit BVN"
-                    maxLength={11}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono tracking-widest"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">{identity.bvn.length}/11 digits</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4 shadow-sm">
-              <h3 className="font-bold text-dark flex items-center gap-2"><MdCameraAlt className="text-primary" /> Identity Documents</h3>
+              <h3 className="font-bold text-dark">Identity Documents</h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Selfie */}
@@ -312,7 +295,10 @@ export default function CreateCampaign() {
               <label className="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" checked={identity.agreed} onChange={e => setIdentity(p => ({ ...p, agreed: e.target.checked }))} className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0" />
                 <span className="text-sm text-gray-600 leading-relaxed">
-                  I confirm that all information I provide is accurate and true. I understand that providing false information or running a fraudulent campaign may result in account suspension, fund freezing, and legal action. I agree to Givia' <span className="text-primary underline">Terms of Service</span> and <span className="text-primary underline">Anti-Fraud Policy</span>.
+                  I confirm that all information I provide is accurate and true. I understand that providing false information or running a fraudulent campaign may result in account suspension, fund freezing, and legal action. I agree to Giviit's{' '}
+                  <Link to="/terms" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:opacity-75">Terms of Service</Link>
+                  {' '}and{' '}
+                  <Link to="/terms#prohibited" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:opacity-75">Anti-Fraud Policy</Link>.
                 </span>
               </label>
             </div>
@@ -322,7 +308,7 @@ export default function CreateCampaign() {
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Anti-Fraud Checks Applied to All Campaigns</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
-                  'NIN & BVN Verification', 'Document + Selfie Match',
+                  'NIN Verification', 'Document + Selfie Match',
                   'Bank Account Verification', 'Phone Number OTP',
                   'Campaign Document Review', 'AI Fraud Detection',
                   'Community Report System', 'Guarantor Vouching',
@@ -487,10 +473,10 @@ export default function CreateCampaign() {
         {/* ── STEP 4: Milestones ── */}
         {step === 4 && (
           <div className="space-y-5">
-            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4">
-              <p className="text-sm font-bold text-primary mb-1">Why add milestones?</p>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Milestones break your goal into clear stages — donors love seeing exactly what each stage achieves. Campaigns with milestones get up to 40% more donations.
+            <div className="border-l-4 border-primary pl-4 py-1">
+              <p className="text-sm font-semibold text-dark">Why add milestones?</p>
+              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                Milestones break your goal into clear stages so donors know exactly where their money goes.
               </p>
             </div>
 
@@ -554,16 +540,11 @@ export default function CreateCampaign() {
         {/* ── STEP 5: Guarantor ── */}
         {step === 5 && (
           <div className="space-y-5">
-            <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
-              <div className="flex items-start gap-3">
-                <MdVerified className="text-green-600 text-xl flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-bold text-green-800">Why a Guarantor?</p>
-                  <p className="text-xs text-green-700 mt-0.5 leading-relaxed">
-                    A guarantor is a trusted person (doctor, pastor, community leader, employer) who publicly vouches for your campaign. Campaigns with guarantors raise up to 60% more — donors feel safer.
-                  </p>
-                </div>
-              </div>
+            <div className="border-l-4 border-primary pl-4 py-1">
+              <p className="text-sm font-semibold text-dark">Why a Guarantor?</p>
+              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                A guarantor is a trusted person — doctor, pastor, community leader, or employer — who publicly vouches for your campaign. Donors are more likely to give when someone credible stands behind you.
+              </p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-4">
@@ -630,6 +611,55 @@ export default function CreateCampaign() {
                     <MdAdd /> Add another co-owner
                   </button>
                 )}
+              </div>
+            </div>
+
+            {/* Prayer Wall */}
+            <div className={`rounded-2xl border p-5 shadow-sm transition-colors ${prayerWallEnabled ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-100'}`}>
+              <div className="flex items-start gap-3">
+                <span className="text-2xl mt-0.5">🙏</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold text-dark text-sm">Prayer Wall</h3>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Donors can leave a short prayer or encouragement when they give. It appears as a public wall on your campaign — completely optional.
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                      <input type="checkbox" className="sr-only peer" checked={prayerWallEnabled}
+                        onChange={e => setPrayerWallEnabled(e.target.checked)} />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                  </div>
+
+                  {prayerWallEnabled && (
+                    <div className="mt-4 rounded-xl overflow-hidden border border-amber-200/80" style={{ background: 'linear-gradient(135deg,#fffbeb,#fef3c7)' }}>
+                      <div className="px-4 py-3 border-b border-amber-200/60 flex items-center gap-2">
+                        <span className="text-base">📿</span>
+                        <span className="font-bold text-amber-900 text-xs">Prayer Wall</span>
+                        <span className="text-amber-600 text-[10px] ml-auto">appears on your campaign page</span>
+                      </div>
+                      <div className="p-3 space-y-2">
+                        {[
+                          { name: 'Anonymous', text: 'Father Lord, bless this cause. Amen.' },
+                          { name: 'Tunde F.', text: 'Lord Jesus, let this family not mourn. In Jesus name.' },
+                        ].map(p => (
+                          <div key={p.name} className="flex gap-2.5 items-start">
+                            <div className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-amber-700"
+                              style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)' }}>
+                              {p.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-semibold text-amber-900">{p.name}</p>
+                              <p className="text-[10px] text-amber-800 italic">"{p.text}"</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -733,8 +763,7 @@ export default function CreateCampaign() {
             </div>
 
             <button type="button" onClick={handleSubmit} disabled={loading}
-              className="w-full py-4 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #22c55e, #1a7a4a)', boxShadow: '0 4px 20px rgba(26,122,74,0.35)' }}>
+              className="w-full py-4 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-base flex items-center justify-center gap-2 transition-colors disabled:opacity-60">
               {loading ? (
                 <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Uploading & Submitting...</>
               ) : (
@@ -754,8 +783,7 @@ export default function CreateCampaign() {
               </button>
             )}
             <button type="button" onClick={() => { if (canProceed() || step >= 4) setStep(step + 1); else toast.error('Please complete all required fields'); }}
-              className="flex-1 py-3 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-1 transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #22c55e, #1a7a4a)', boxShadow: '0 4px 12px rgba(26,122,74,0.3)' }}>
+              className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm flex items-center justify-center gap-1 transition-colors">
               Next <MdArrowForward />
             </button>
           </div>
@@ -764,3 +792,4 @@ export default function CreateCampaign() {
     </DashboardLayout>
   );
 }
+

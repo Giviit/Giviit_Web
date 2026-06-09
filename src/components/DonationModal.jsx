@@ -179,18 +179,20 @@ export default function DonationModal({ campaign, onClose, presetAmount }) {
                     className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-primary outline-none text-sm resize-none" />
                 </div>
 
-                {/* Prayer Wall */}
-                <div>
-                  <label className="block text-sm font-semibold text-dark mb-1">
-                    Leave a Prayer or Encouragement
-                    <span className="text-gray-400 font-normal ml-1">(optional)</span>
-                  </label>
-                  <textarea value={prayer} onChange={e => setPrayer(stripEmoji(e.target.value))}
-                    placeholder="Father Lord, heal John completely and restore his health..."
-                    rows={2}
-                    className="w-full px-4 py-2.5 border-2 border-amber-200 bg-amber-50/50 rounded-xl focus:border-amber-400 outline-none text-sm resize-none placeholder:text-amber-400/70" />
-                  <p className="text-[10px] text-amber-600 mt-1">Your prayer will appear on the public Prayer Wall for this campaign</p>
-                </div>
+                {/* Prayer Wall — only shown if creator enabled it */}
+                {campaign.prayer_wall_enabled && (
+                  <div>
+                    <label className="block text-sm font-semibold text-dark mb-1">
+                      Leave a Prayer or Encouragement
+                      <span className="text-gray-400 font-normal ml-1">(optional)</span>
+                    </label>
+                    <textarea value={prayer} onChange={e => setPrayer(stripEmoji(e.target.value))}
+                      placeholder="Father Lord, heal John completely and restore his health..."
+                      rows={2}
+                      className="w-full px-4 py-2.5 border-2 border-amber-200 bg-amber-50/50 rounded-xl focus:border-amber-400 outline-none text-sm resize-none placeholder:text-amber-400/70" />
+                    <p className="text-[10px] text-amber-600 mt-1">Your prayer will appear on the public Prayer Wall for this campaign</p>
+                  </div>
+                )}
               </>
             )}
 

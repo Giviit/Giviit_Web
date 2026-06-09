@@ -23,80 +23,8 @@
 }
 
 @layer components {
-  /* Glossy icon container */
-  .icon-glossy {
-    @apply relative overflow-hidden;
-    background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 100%);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255,255,255,0.2);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.3);
-  }
-
-  .icon-glossy::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 50%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
-    border-radius: inherit;
-    pointer-events: none;
-  }
-
-  /* Green glossy */
-  .icon-green {
-    background: linear-gradient(135deg, #22c55e 0%, #1a7a4a 100%);
-    box-shadow: 0 4px 15px rgba(26,122,74,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
-  }
-
-  /* Gold glossy */
-  .icon-gold {
-    background: linear-gradient(135deg, #fbbf24 0%, #f5a623 100%);
-    box-shadow: 0 4px 15px rgba(245,166,35,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
-  }
-
-  /* Blue glossy */
-  .icon-blue {
-    background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
-    box-shadow: 0 4px 15px rgba(37,99,235,0.3), inset 0 1px 0 rgba(255,255,255,0.25);
-  }
-
-  /* Red/orange glossy */
-  .icon-red {
-    background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
-    box-shadow: 0 4px 15px rgba(220,38,38,0.3), inset 0 1px 0 rgba(255,255,255,0.25);
-  }
-
-  /* Purple glossy */
-  .icon-purple {
-    background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
-    box-shadow: 0 4px 15px rgba(124,58,237,0.3), inset 0 1px 0 rgba(255,255,255,0.25);
-  }
-
-  /* Glassmorphism card */
-  .glass-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-  }
-
-  /* Stat card with gradient */
   .stat-card {
-    @apply relative overflow-hidden bg-white rounded-2xl border border-gray-100;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
-  }
-
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: -40px;
-    right: -40px;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    opacity: 0.06;
+    @apply bg-white rounded-xl border border-gray-200;
   }
 }
 

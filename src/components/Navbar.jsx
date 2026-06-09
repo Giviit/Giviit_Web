@@ -6,6 +6,7 @@ import {
 } from 'react-icons/md';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import GiviitLogo from './GiviitLogo';
 
 const EXPLORE_LINKS = [
   { to: '/campaigns', icon: MdCampaign, label: 'Browse Campaigns', desc: 'Find a cause to support' },
@@ -55,14 +56,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-sm">CF</span>
-            </div>
-            <div>
-              <span className="font-black text-dark text-lg tracking-tight">Givia</span>
-              <span className="hidden sm:block text-[10px] text-gray-400 -mt-1 font-medium tracking-wider">TOGETHER WE RISE</span>
-            </div>
+          <Link to="/" className="flex items-center flex-shrink-0">
+            <GiviitLogo size={30} variant="flat" showWordmark wordmarkLight={false} />
           </Link>
 
           {/* Desktop nav */}
@@ -94,7 +89,7 @@ export default function Navbar() {
               {exploreOpen && (
                 <div className="absolute left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden">
                   <div className="px-4 pt-2 pb-3 border-b border-gray-50">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Explore Givia</p>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Explore Giviit</p>
                   </div>
                   {EXPLORE_LINKS.map(({ to, icon: Icon, label, desc }) => (
                     <Link
@@ -241,3 +236,4 @@ export default function Navbar() {
     </header>
   );
 }
+

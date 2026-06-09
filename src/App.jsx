@@ -10,6 +10,9 @@ import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import AboutPage from './pages/AboutPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import CookiePolicyPage from './pages/CookiePolicyPage';
+import TermsPage from './pages/TermsPage';
 
 // Auth pages
 import LoginPage from './pages/auth/LoginPage';
@@ -30,10 +33,12 @@ import PledgeConfirmPage from './pages/PledgeConfirmPage';
 
 // Guards
 import ProtectedRoute from './components/ProtectedRoute';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
     <div className="min-h-screen">
+      <ScrollToTop />
       <Routes>
         {/* Public */}
         <Route path="/" element={<HomePage />} />
@@ -46,6 +51,9 @@ function App() {
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/cookie-policy" element={<CookiePolicyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
 
         {/* Auth */}
         <Route path="/login" element={<LoginPage />} />

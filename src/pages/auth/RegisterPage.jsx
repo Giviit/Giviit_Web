@@ -3,15 +3,17 @@ import { useNavigate, Link } from 'react-router-dom';
 import { MdPerson, MdEmail, MdPhone, MdLock, MdVisibility, MdVisibilityOff, MdArrowForward } from 'react-icons/md';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import GiviitLogo from '../../components/GiviitLogo';
 
 const STEPS = [
   { icon: '01', title: 'Create your campaign', desc: 'Set it up in minutes' },
-  { icon: '02', title: 'Share via WhatsApp', desc: 'Reach your whole network' },
+  { icon: '02', title: 'Share your campaign link', desc: 'Reach your whole network' },
   { icon: '03', title: 'Receive funds', desc: 'Direct to your bank account' },
 ];
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ full_name: '', email: '', phone: '', password: '' });
+  const [agreed, setAgreed] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const { register, login } = useAuth();
@@ -21,11 +23,12 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!agreed) { toast.error('Please accept the Terms of Service, Privacy Policy, and Cookie Policy to continue.'); return; }
     if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     setLoading(true);
     try {
-      await register(form);
-      toast.success('Account created! Welcome to Givia.');
+      await register({ ...form, terms_agreed: true });
+      toast.success('Account created! Welcome to Giviit.');
       navigate('/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Registration failed. Please try again.');
@@ -47,12 +50,10 @@ export default function RegisterPage() {
         <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-accent/15 rounded-full blur-3xl" />
 
         <div className="relative flex flex-col h-full px-10 py-10">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl flex items-center justify-center">
-              <span className="text-white font-black text-sm">CF</span>
-            </div>
+          <Link to="/" className="flex items-center gap-3">
+            <GiviitLogo size={40} variant="white" />
             <div>
-              <p className="text-white font-black text-lg leading-none">Givia</p>
+              <p className="text-white font-black text-lg leading-none">Giviit</p>
               <p className="text-white/60 text-[10px] tracking-widest">TOGETHER WE RISE</p>
             </div>
           </Link>
@@ -98,11 +99,8 @@ export default function RegisterPage() {
       {/* Right panel */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 bg-gray-50 overflow-y-auto">
         <div className="w-full max-w-sm">
-          <Link to="/" className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
-              <span className="text-white font-black text-sm">CF</span>
-            </div>
-            <span className="font-black text-dark text-lg">Givia</span>
+          <Link to="/" className="lg:hidden flex items-center gap-2.5 mb-8">
+            <GiviitLogo size={32} variant="green" showWordmark wordmarkLight={false} />
           </Link>
 
           <h1 className="text-2xl font-black text-dark mb-1">Create your account</h1>
@@ -151,8 +149,8 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
+              disabled={loading || !agreed}
+              className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
             >
               {loading ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -161,9 +159,20 @@ export default function RegisterPage() {
               )}
             </button>
 
-            <p className="text-xs text-gray-400 text-center">
-              By signing up you agree to our Terms of Service and Privacy Policy.
-            </p>
+            <label className={`flex items-start gap-3 cursor-pointer rounded-xl border p-3 transition-colors ${agreed ? 'border-primary bg-primary/5' : 'border-gray-200 bg-white'}`}>
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={e => setAgreed(e.target.checked)}
+                className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0 cursor-pointer"
+              />
+              <span className="text-xs text-gray-500 leading-relaxed">
+                I have read and agree to Giviit's{' '}
+                <Link to="/terms" onClick={e => e.stopPropagation()} className="text-primary underline hover:text-primary/80 font-medium">Terms of Service</Link>,{' '}
+                <Link to="/privacy-policy" onClick={e => e.stopPropagation()} className="text-primary underline hover:text-primary/80 font-medium">Privacy Policy</Link>, and{' '}
+                <Link to="/cookie-policy" onClick={e => e.stopPropagation()} className="text-primary underline hover:text-primary/80 font-medium">Cookie Policy</Link>.
+              </span>
+            </label>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-500">
@@ -175,3 +184,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

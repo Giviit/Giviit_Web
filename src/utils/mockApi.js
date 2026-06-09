@@ -123,7 +123,36 @@ export const mockHandlers = {
     return { message: 'Declined' };
   },
 
+  // ── Dashboard Analytics ────────────────────────────────────
+  'GET /dashboard/analytics': async () => {
+    await delay();
+    return {
+      total_raised: 8170000,
+      available_balance: 5261500,
+      platform_fees_paid: 408500,
+      total_withdrawn: 2500000,
+      this_month: 850000,
+      last_month: 420000,
+      total_donors: 941,
+      pending_withdrawals: 0,
+      monthly: [
+        { month: 'Jan', amount: 450000 },
+        { month: 'Feb', amount: 370000 },
+        { month: 'Mar', amount: 680000 },
+        { month: 'Apr', amount: 580000 },
+        { month: 'May', amount: 420000 },
+        { month: 'Jun', amount: 850000 },
+      ],
+    };
+  },
+
   // ── Donations ──────────────────────────────────────────────
+  'GET /donations/my': async (params) => {
+    await delay();
+    const limit = Number(params?.limit) || 10;
+    return { donations: MOCK_DONATIONS.slice(0, limit) };
+  },
+
   'GET /donations/campaign/:id': async () => {
     await delay();
     return { donations: MOCK_DONATIONS, total: MOCK_DONATIONS.length };

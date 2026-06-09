@@ -16,7 +16,7 @@ import toast from 'react-hot-toast';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: MdDashboard, label: 'Overview', end: true },
-  { to: '/dashboard/campaigns', icon: MdCampaign, label: 'My Campaigns' },
+  { to: '/dashboard/campaigns', icon: MdCampaign, label: 'My Campaigns', end: true },
   { to: '/dashboard/campaigns/create', icon: MdAddCircle, label: 'New Campaign' },
   { to: '/dashboard/withdrawals', icon: MdAccountBalanceWallet, label: 'Withdrawals' },
   { to: '/dashboard/profile', icon: MdPerson, label: 'Profile' },
@@ -43,11 +43,8 @@ export default function DashboardLayout({ children }) {
   const Sidebar = () => (
     <aside className="w-64 flex-shrink-0 flex flex-col h-full bg-white border-r border-gray-100">
       <div className="px-5 py-5 border-b border-gray-100">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-white font-black text-sm">CF</span>
-          </div>
-          <span className="font-black text-dark">Givia</span>
+        <Link to="/" className="flex items-center">
+          <span className="font-black text-dark text-xl tracking-tight">Giviit</span>
         </Link>
       </div>
 
@@ -111,7 +108,7 @@ export default function DashboardLayout({ children }) {
           <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-lg hover:bg-gray-100">
             <MdMenu className="text-xl" />
           </button>
-          <Link to="/" className="font-black text-dark">Givia</Link>
+          <span className="font-black text-dark text-lg tracking-tight">Giviit</span>
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
             <span className="text-white text-sm font-bold">{user?.full_name?.charAt(0)}</span>
           </div>
@@ -124,3 +121,4 @@ export default function DashboardLayout({ children }) {
     </div>
   );
 }
+

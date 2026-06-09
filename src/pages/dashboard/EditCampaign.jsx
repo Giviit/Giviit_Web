@@ -26,6 +26,7 @@ export default function EditCampaign() {
   const [form, setForm] = useState({
     title: '', category: '', goal_amount: '',
     deadline: '', description: '', story: '', is_urgent: false,
+    prayer_wall_enabled: false,
   });
   const [loading, setLoading] = useState(false);
 
@@ -40,6 +41,7 @@ export default function EditCampaign() {
         description: data.description || '',
         story: data.story?.replace(/<[^>]+>/g, '') || '',
         is_urgent: data.is_urgent || false,
+        prayer_wall_enabled: data.prayer_wall_enabled || false,
       });
     }
   }, [data]);
@@ -197,6 +199,27 @@ export default function EditCampaign() {
               rows={8}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
             />
+          </div>
+
+          {/* Prayer Wall */}
+          <div className={`rounded-2xl border p-5 transition-colors ${form.prayer_wall_enabled ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-100'}`}>
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🙏</span>
+              <div className="flex-1">
+                <p className="font-bold text-dark text-sm">Prayer Wall</p>
+                <p className="text-xs text-gray-400">Donors can leave a prayer or encouragement on your campaign page. Off by default.</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input type="checkbox" className="sr-only peer" checked={form.prayer_wall_enabled}
+                  onChange={handleChange('prayer_wall_enabled')} />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+              </label>
+            </div>
+            {form.prayer_wall_enabled && (
+              <p className="text-xs text-amber-700 font-medium mt-3 flex items-center gap-1.5">
+                <span>✓</span> Prayer Wall is enabled — donors can leave prayers when they give.
+              </p>
+            )}
           </div>
 
           {/* Actions */}
