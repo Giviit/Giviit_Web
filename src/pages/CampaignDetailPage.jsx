@@ -18,7 +18,7 @@ import GuarantorBadge from '../components/GuarantorBadge';
 import DiasporaLeaderboard from '../components/DiasporaLeaderboard';
 import SapaBanner from '../components/SapaBanner';
 import api from '../utils/api';
-import { formatCurrency, formatDaysLeft, formatProgress, formatTimeAgo } from '../utils/formatters';
+import { formatCurrency, formatDaysLeft, formatProgress, formatTimeAgo, getCampaignShareUrl } from '../utils/formatters';
 
 function BirthdayBanner({ campaign }) {
   if (!campaign.is_birthday || !campaign.birthday_date) return null;
@@ -51,7 +51,7 @@ function BirthdayBanner({ campaign }) {
 function WhatsAppShareBtn({ campaign }) {
   const raised = formatCurrency(campaign.raised_amount || 0);
   const goal = formatCurrency(campaign.goal_amount || 0);
-  const url = typeof window !== 'undefined' ? window.location.href : '';
+  const url = getCampaignShareUrl(campaign);
   const msg = encodeURIComponent(
     `Help ${campaign.title}! They've raised ${raised} of ${goal}. Every donation counts. Donate here: ${url}`
   );
@@ -68,10 +68,10 @@ function WhatsAppShareBtn({ campaign }) {
   );
 }
 
-function CopyLinkBtn() {
+function CopyLinkBtn({ campaign }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
-    navigator.clipboard.writeText(window.location.href);
+    navigator.clipboard.writeText(getCampaignShareUrl(campaign));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -303,7 +303,7 @@ export default function CampaignDetailPage() {
               <p className="text-[11px] text-center text-gray-400 mb-4">Secured by Paystack · No amount is too small</p>
               <div className="flex gap-2 flex-wrap">
                 <WhatsAppShareBtn campaign={campaign} />
-                <CopyLinkBtn />
+                <CopyLinkBtn campaign={campaign} />
               </div>
 
               {/* Quick amounts */}

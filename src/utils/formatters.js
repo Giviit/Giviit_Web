@@ -38,11 +38,20 @@ export function stripEmoji(str) {
   return str.replace(/\p{Extended_Pictographic}/gu, '');
 }
 
-export function buildWhatsAppUrl(campaign, baseUrl) {
+// Points at the backend's server-rendered preview page, not the SPA route directly —
+// link unfurlers on WhatsApp/Facebook/Telegram don't run JS, so only a server-rendered
+// page can show the campaign's actual cover image instead of a generic logo.
+export function getCampaignShareUrl(campaign) {
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const backendOrigin = apiBase.replace(/\/api\/?$/, '');
+  return `${backendOrigin}/share/campaign/${campaign.slug}`;
+}
+
+export function buildWhatsAppUrl(campaign) {
   const name = campaign.title;
   const raised = formatCurrency(campaign.raised_amount);
   const goal = formatCurrency(campaign.goal_amount);
-  const url = `${baseUrl}/campaign/${campaign.slug}`;
+  const url = getCampaignShareUrl(campaign);
   const text = `Help "${name}" reach their goal! They've raised ${raised} of ${goal}. Every donation counts. Donate here: ${url}`;
   return `https://wa.me/?text=${encodeURIComponent(text)}`;
 }

@@ -50,7 +50,7 @@ export default function DonateSuccessPage() {
               <div className="flex flex-col gap-3">
                 {data?.campaign && (
                   <a
-                    href={buildWhatsAppUrl(data.campaign, window.location.origin)}
+                    href={buildWhatsAppUrl(data.campaign)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl transition-colors"
