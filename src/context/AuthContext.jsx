@@ -63,10 +63,19 @@ export function AuthProvider({ children }) {
       const mockUser = { ...MOCK_CREATOR_USER, email: data.email, full_name: data.full_name, phone: data.phone };
       localStorage.setItem('mock_user', JSON.stringify(mockUser));
       setUser(mockUser);
-      return { message: 'Account created (demo mode)' };
+      return mockUser;
     }
     const res = await api.post('/auth/register', data);
-    return res.data;
+    const { token, user: userData } = res.data;
+    if (!token) {
+      // Backend created the account but couldn't auto-sign-in (rare) — caller
+      // should route to /login instead of /dashboard in this case.
+      return null;
+    }
+    localStorage.setItem('token', token);
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setUser(userData);
+    return userData;
   };
 
   const loginWithGoogle = async () => {

@@ -28,7 +28,12 @@ export default function RegisterPage() {
     if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     setLoading(true);
     try {
-      await register({ ...form, terms_agreed: true });
+      const newUser = await register({ ...form, terms_agreed: true });
+      if (!newUser) {
+        toast.success('Account created! Please log in.');
+        navigate('/login');
+        return;
+      }
       toast.success('Account created! Welcome to Giviit.');
       navigate('/dashboard');
     } catch (err) {
