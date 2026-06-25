@@ -122,7 +122,7 @@ export default function CreateCampaign() {
 
   // ── Step validation ──
   const canProceed = () => {
-    if (step === 1) return identity.nin.length >= 11 && identity.agreed;
+    if (step === 1) return identity.nin.length === 11 && !!identity.selfieFile && !!identity.idDocFile && identity.agreed;
     if (step === 2) return form.title && form.category && form.goal_amount && form.description && form.story;
     if (step === 3) return !!coverImage || !!coverPreview;
     return true;
@@ -132,9 +132,15 @@ export default function CreateCampaign() {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Upload identity docs (mock — just log)
+      // Upload identity documents to Cloudinary, then submit for review
+      const [selfie_url, id_document_url] = await Promise.all([
+        uploadImage(identity.selfieFile),
+        uploadImage(identity.idDocFile),
+      ]);
       await api.post('/auth/verify-identity', {
         nin: identity.nin,
+        selfie_url,
+        id_document_url,
       });
 
       // Upload images
