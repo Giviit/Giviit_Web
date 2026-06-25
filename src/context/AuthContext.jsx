@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
     return userData;
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (agreed) => {
     if (MOCK_MODE) {
       const mockUser = { ...MOCK_CREATOR_USER, email: 'google@demo.com', full_name: 'Google User' };
       localStorage.setItem('mock_user', JSON.stringify(mockUser));
@@ -86,7 +86,9 @@ export function AuthProvider({ children }) {
       return mockUser;
     }
 
-    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/google`;
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const query = agreed ? '?agreed=true' : '';
+    window.location.href = `${apiUrl}/auth/google${query}`;
   };
 
   const logout = async () => {

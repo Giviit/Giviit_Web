@@ -26,8 +26,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     const error = searchParams.get('error');
+    const code = searchParams.get('code');
     if (error) {
-      toast.error(error);
+      if (code === 'TERMS_NOT_AGREED') {
+        toast.error('Please create an account first and agree to our Terms of Service to continue with Google.', { duration: 6000 });
+      } else {
+        toast.error(error);
+      }
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, setSearchParams]);

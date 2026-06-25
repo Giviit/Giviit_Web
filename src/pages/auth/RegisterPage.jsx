@@ -116,8 +116,9 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={async () => {
+              if (!agreed) { toast.error('Please accept the Terms of Service, Privacy Policy, and Cookie Policy to continue.'); return; }
               setLoading(true);
-              try { await loginWithGoogle(); }
+              try { await loginWithGoogle(true); }
               catch { toast.error('Google sign-up failed. Please try again.'); setLoading(false); }
             }}
             disabled={loading}
