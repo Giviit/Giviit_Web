@@ -5,10 +5,11 @@ import { MdArrowBack, MdSave } from 'react-icons/md';
 import DashboardLayout from '../../components/DashboardLayout';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
-import { stripEmoji } from '../../utils/formatters';
+import { stripEmoji, formatCurrency } from '../../utils/formatters';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 const CATEGORIES = ['medical', 'education', 'business', 'emergency', 'funeral', 'church', 'community', 'other'];
+const MAX_GOAL_AMOUNT = 50000000;
 
 export default function EditCampaign() {
   const { id } = useParams();
@@ -55,6 +56,10 @@ export default function EditCampaign() {
     e.preventDefault();
     if (!form.title || !form.category || !form.goal_amount || !form.description) {
       toast.error('Please fill all required fields');
+      return;
+    }
+    if (Number(form.goal_amount) > MAX_GOAL_AMOUNT) {
+      toast.error(`Campaign goals are capped at ${formatCurrency(MAX_GOAL_AMOUNT)}. Need more? Contact admin at support@giviit.ng.`);
       return;
     }
     setLoading(true);
@@ -141,8 +146,10 @@ export default function EditCampaign() {
                 onChange={handleChange('goal_amount')}
                 placeholder="e.g. 500000"
                 min="1000"
+                max={MAX_GOAL_AMOUNT}
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               />
+              <p className="text-xs text-gray-400 mt-1">Maximum {formatCurrency(MAX_GOAL_AMOUNT)} per campaign.</p>
             </div>
           </div>
 

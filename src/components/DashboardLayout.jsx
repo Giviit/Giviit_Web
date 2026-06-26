@@ -13,6 +13,7 @@ import {
 } from 'react-icons/md';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import BannedBanner from './BannedBanner';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: MdDashboard, label: 'Overview', end: true },
@@ -115,6 +116,7 @@ export default function DashboardLayout({ children }) {
         </div>
 
         <main className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+          <BannedBanner />
           {children}
         </main>
       </div>

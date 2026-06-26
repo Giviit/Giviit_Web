@@ -27,6 +27,7 @@ export function AuthProvider({ children }) {
         .then(res => setUser(res.data.user))
         .catch(() => {
           localStorage.removeItem('token');
+          localStorage.removeItem('refresh_token');
           delete api.defaults.headers.common['Authorization'];
         })
         .finally(() => setLoading(false));
@@ -51,8 +52,9 @@ export function AuthProvider({ children }) {
     }
 
     const res = await api.post('/auth/login', { email, password });
-    const { token, user: userData } = res.data;
+    const { token, refresh_token, user: userData } = res.data;
     localStorage.setItem('token', token);
+    if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setUser(userData);
     return userData;
@@ -63,13 +65,23 @@ export function AuthProvider({ children }) {
       const mockUser = { ...MOCK_CREATOR_USER, email: data.email, full_name: data.full_name, phone: data.phone };
       localStorage.setItem('mock_user', JSON.stringify(mockUser));
       setUser(mockUser);
-      return { message: 'Account created (demo mode)' };
+      return mockUser;
     }
     const res = await api.post('/auth/register', data);
-    return res.data;
+    const { token, refresh_token, user: userData } = res.data;
+    if (!token) {
+      // Backend created the account but couldn't auto-sign-in (rare) — caller
+      // should route to /login instead of /dashboard in this case.
+      return null;
+    }
+    localStorage.setItem('token', token);
+    if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setUser(userData);
+    return userData;
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (agreed) => {
     if (MOCK_MODE) {
       const mockUser = { ...MOCK_CREATOR_USER, email: 'google@demo.com', full_name: 'Google User' };
       localStorage.setItem('mock_user', JSON.stringify(mockUser));
@@ -77,7 +89,9 @@ export function AuthProvider({ children }) {
       return mockUser;
     }
 
-    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/google`;
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const query = agreed ? '?agreed=true' : '';
+    window.location.href = `${apiUrl}/auth/google${query}`;
   };
 
   const logout = async () => {
@@ -88,6 +102,7 @@ export function AuthProvider({ children }) {
     }
     try { await api.post('/auth/logout'); } catch {}
     localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };

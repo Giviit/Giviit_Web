@@ -14,7 +14,11 @@ export function formatDaysLeft(deadline) {
 
 export function formatProgress(raised, goal) {
   if (!goal || goal === 0) return 0;
-  return Math.min(100, Math.round((raised / goal) * 100));
+  const pct = Math.round((Number(raised) / Number(goal)) * 100);
+  // A real donation against a huge goal can round down to a literal 0%,
+  // making the bar look completely empty even though progress was made.
+  if (Number(raised) > 0 && pct === 0) return 1;
+  return Math.min(100, pct);
 }
 
 export function formatTimeAgo(date) {

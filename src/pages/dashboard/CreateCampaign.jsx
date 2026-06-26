@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   MdCloudUpload, MdClose, MdAdd, MdArrowForward, MdArrowBack,
@@ -6,12 +6,14 @@ import {
   MdCheckCircle, MdLock, MdCameraAlt, MdBadge, MdDragHandle,
 } from 'react-icons/md';
 import DashboardLayout from '../../components/DashboardLayout';
+import CameraCaptureModal from '../../components/CameraCaptureModal';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../../utils/formatters';
 
 const CATEGORIES = ['medical', 'education', 'business', 'emergency', 'funeral', 'church', 'community', 'other'];
+const MAX_GOAL_AMOUNT = 50000000;
 
 const STEPS = [
   { id: 1, label: 'Identity Verification', icon: MdShield, desc: 'Verify who you are' },
@@ -25,6 +27,17 @@ const STEPS = [
 
 const BLANK_MILESTONE = { title: '', description: '', amount: '' };
 
+const DRAFT_KEY = 'giviit_campaign_draft';
+
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function CreateCampaign() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -32,41 +45,63 @@ export default function CreateCampaign() {
   const galleryInputRef = useRef();
   const selfieInputRef = useRef();
   const idDocInputRef = useRef();
+  const draft = useRef(loadDraft()).current;
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(draft?.step || 1);
   const [loading, setLoading] = useState(false);
 
   // ── Step 1: Identity ──
+  // selfieFile/selfiePreview/idDocFile/idDocPreview are never persisted —
+  // browsers can't restore File objects or blob: URLs across a reload, so
+  // those are intentionally left blank and re-collected from the user.
   const [identity, setIdentity] = useState({
-    nin: '', selfieFile: null, selfiePreview: null,
-    idDocFile: null, idDocPreview: null, agreed: false,
+    nin: draft?.identity?.nin || '', selfieFile: null, selfiePreview: null,
+    idDocFile: null, idDocPreview: null, agreed: draft?.identity?.agreed || false,
   });
+  const [showCamera, setShowCamera] = useState(false);
 
   // ── Step 2: Campaign info ──
-  const [form, setForm] = useState({
+  const [form, setForm] = useState(draft?.form || {
     title: '', category: '', goal_amount: '', deadline: '',
     description: '', story: '', is_urgent: false,
     urgency_reason: '', urgency_deadline: '',
   });
 
-  // ── Step 3: Images ──
+  // ── Step 3: Images (not persisted — see note above) ──
   const [coverImage, setCoverImage] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
   const [gallery, setGallery] = useState([]);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
 
   // ── Step 4: Milestones ──
-  const [milestones, setMilestones] = useState([]);
+  const [milestones, setMilestones] = useState(draft?.milestones || []);
 
   // ── Step 5: Guarantor ──
-  const [guarantor, setGuarantor] = useState({
+  const [guarantor, setGuarantor] = useState(draft?.guarantor || {
     guarantor_name: '', guarantor_email: '', guarantor_phone: '', guarantor_relationship: '',
   });
 
   // ── Step 6: Team + Birthday + Prayer Wall ──
-  const [coOwnerEmails, setCoOwnerEmails] = useState(['']);
-  const [birthday, setBirthday] = useState({ is_birthday: false, birthday_date: '', birthday_person_name: '' });
-  const [prayerWallEnabled, setPrayerWallEnabled] = useState(false);
+  const [coOwnerEmails, setCoOwnerEmails] = useState(draft?.coOwnerEmails || ['']);
+  const [birthday, setBirthday] = useState(draft?.birthday || { is_birthday: false, birthday_date: '', birthday_person_name: '' });
+  const [prayerWallEnabled, setPrayerWallEnabled] = useState(draft?.prayerWallEnabled || false);
+
+  // Let the user know their text was restored, but images/selfie/ID were not.
+  useEffect(() => {
+    if (draft) {
+      toast('Restored your unfinished campaign. Please re-add your selfie, ID photo, and images — those can\'t be saved across a reload.', { duration: 7000, icon: '📝' });
+    }
+  }, []);
+
+  // Auto-save everything that *can* survive a reload, on every change.
+  useEffect(() => {
+    const data = {
+      step,
+      identity: { nin: identity.nin, agreed: identity.agreed },
+      form, milestones, guarantor, coOwnerEmails, birthday, prayerWallEnabled,
+    };
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch {}
+  }, [step, identity.nin, identity.agreed, form, milestones, guarantor, coOwnerEmails, birthday, prayerWallEnabled]);
 
   const set = (setter) => (field) => (e) => {
     const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -91,6 +126,11 @@ export default function CreateCampaign() {
   const handleSelfie = (e) => {
     const file = e.target.files[0];
     if (file) { setIdentity(p => ({ ...p, selfieFile: file, selfiePreview: URL.createObjectURL(file) })); }
+  };
+
+  const handleCameraCapture = (file, previewUrl) => {
+    setIdentity(p => ({ ...p, selfieFile: file, selfiePreview: previewUrl }));
+    setShowCamera(false);
   };
 
   const handleIdDoc = (e) => {
@@ -122,19 +162,38 @@ export default function CreateCampaign() {
 
   // ── Step validation ──
   const canProceed = () => {
-    if (step === 1) return identity.nin.length >= 11 && identity.agreed;
-    if (step === 2) return form.title && form.category && form.goal_amount && form.description && form.story;
+    if (step === 1) return identity.nin.length === 11 && !!identity.selfieFile && !!identity.idDocFile && identity.agreed;
+    if (step === 2) return form.title && form.category && form.goal_amount && form.description && form.story && Number(form.goal_amount) <= MAX_GOAL_AMOUNT;
     if (step === 3) return !!coverImage || !!coverPreview;
+    if (step === 4) return milestones.every(m => !m.amount || Number(m.amount) <= Number(form.goal_amount || 0));
     return true;
   };
 
   // ── Submit ──
   const handleSubmit = async () => {
+    if (!identity.selfieFile || !identity.idDocFile) {
+      toast.error('Please re-add your selfie and ID photo — they can\'t be restored after a page reload.');
+      setStep(1);
+      return;
+    }
+    if (!coverImage) {
+      toast.error('Please re-select your cover image — it can\'t be restored after a page reload.');
+      setStep(3);
+      return;
+    }
+
     setLoading(true);
     try {
-      // Upload identity docs (mock — just log)
+      // Upload identity documents to Cloudinary, then submit for review
+      const [selfie_url, id_document_url] = await Promise.all([
+        uploadImage(identity.selfieFile),
+        uploadImage(identity.idDocFile),
+      ]);
       await api.post('/auth/verify-identity', {
         nin: identity.nin,
+        selfie_url,
+        id_document_url,
+        identity_agreement_accepted: identity.agreed,
       });
 
       // Upload images
@@ -174,6 +233,7 @@ export default function CreateCampaign() {
         await api.post(`/campaigns/${campaignId}/invite`, { email });
       }
 
+      localStorage.removeItem(DRAFT_KEY);
       toast.success('Campaign submitted for review! You\'ll hear back within 24–48 hours.');
       navigate('/dashboard/campaigns');
     } catch (err) {
@@ -254,13 +314,13 @@ export default function CreateCampaign() {
                       </button>
                     </div>
                   ) : (
-                    <button type="button" onClick={() => selfieInputRef.current?.click()}
+                    <button type="button" onClick={() => setShowCamera(true)}
                       className="w-full h-32 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-green-50 transition-all">
                       <MdCameraAlt className="text-3xl text-gray-400" />
-                      <p className="text-xs text-gray-500">Upload a clear selfie</p>
+                      <p className="text-xs text-gray-500">Open camera to capture</p>
                     </button>
                   )}
-                  <input ref={selfieInputRef} type="file" accept="image/*" className="hidden" onChange={handleSelfie} />
+                  <input ref={selfieInputRef} type="file" accept="image/*" capture="user" className="hidden" onChange={handleSelfie} />
                 </div>
 
                 {/* ID Document */}
@@ -292,13 +352,14 @@ export default function CreateCampaign() {
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <label className="flex items-start gap-3 cursor-pointer">
+              <label className={`flex items-start gap-3 cursor-pointer rounded-xl border p-3 transition-colors ${identity.agreed ? 'border-primary bg-primary/5' : 'border-gray-200'}`}>
                 <input type="checkbox" checked={identity.agreed} onChange={e => setIdentity(p => ({ ...p, agreed: e.target.checked }))} className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0" />
                 <span className="text-sm text-gray-600 leading-relaxed">
                   I confirm that all information I provide is accurate and true. I understand that providing false information or running a fraudulent campaign may result in account suspension, fund freezing, and legal action. I agree to Giviit's{' '}
                   <Link to="/terms" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:opacity-75">Terms of Service</Link>
                   {' '}and{' '}
                   <Link to="/terms#prohibited" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:opacity-75">Anti-Fraud Policy</Link>.
+                  <span className="text-red-500"> *</span>
                 </span>
               </label>
             </div>
@@ -353,9 +414,18 @@ export default function CreateCampaign() {
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₦</span>
                     <input type="number" value={form.goal_amount} onChange={set(setForm)('goal_amount')}
-                      placeholder="500,000" min="1000"
-                      className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary outline-none text-sm" />
+                      placeholder="500,000" min="1000" max={MAX_GOAL_AMOUNT}
+                      className={`w-full pl-8 pr-4 py-3 border-2 rounded-xl outline-none text-sm ${
+                        Number(form.goal_amount) > MAX_GOAL_AMOUNT ? 'border-red-300 bg-red-50 focus:border-red-400' : 'border-gray-200 focus:border-primary'
+                      }`} />
                   </div>
+                  {Number(form.goal_amount) > MAX_GOAL_AMOUNT ? (
+                    <p className="text-xs text-red-500 mt-1">
+                      Campaign goals are capped at {formatCurrency(MAX_GOAL_AMOUNT)}. Need more? Contact admin at support@giviit.ng.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-400 mt-1">Maximum {formatCurrency(MAX_GOAL_AMOUNT)} per campaign.</p>
+                  )}
                 </div>
               </div>
 
@@ -519,8 +589,15 @@ export default function CreateCampaign() {
                         <div>
                           <label className="block text-xs font-semibold text-dark mb-1">Amount (₦) <span className="text-red-500">*</span></label>
                           <input type="number" value={m.amount} onChange={e => updateMilestone(i, 'amount', e.target.value)}
-                            placeholder="e.g. 500000" min="100"
-                            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                            placeholder="e.g. 500000" min="100" max={form.goal_amount || undefined}
+                            className={`w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                              m.amount && Number(m.amount) > Number(form.goal_amount || 0)
+                                ? 'border-red-300 bg-red-50 focus:ring-red-500/20'
+                                : 'border-gray-200 focus:ring-primary/20 focus:border-primary'
+                            }`} />
+                          {m.amount && Number(m.amount) > Number(form.goal_amount || 0) && (
+                            <p className="text-[11px] text-red-500 mt-1">Cannot exceed your campaign goal of {formatCurrency(form.goal_amount)}</p>
+                          )}
                         </div>
                       </div>
                       <div className="mt-2">
@@ -782,13 +859,26 @@ export default function CreateCampaign() {
                 <MdArrowBack /> Back
               </button>
             )}
-            <button type="button" onClick={() => { if (canProceed() || step >= 4) setStep(step + 1); else toast.error('Please complete all required fields'); }}
+            <button type="button" onClick={() => {
+              if (canProceed() || step >= 5) { setStep(step + 1); return; }
+              if (step === 1 && !identity.agreed) { toast.error('Please confirm the accuracy of your information and accept the Anti-Fraud Policy to continue.'); return; }
+              if (step === 2 && Number(form.goal_amount) > MAX_GOAL_AMOUNT) { toast.error(`Campaign goals are capped at ${formatCurrency(MAX_GOAL_AMOUNT)}. Need more? Contact admin at support@giviit.ng.`); return; }
+              if (step === 4) { toast.error("A milestone amount can't exceed your overall campaign goal."); return; }
+              toast.error('Please complete all required fields');
+            }}
               className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm flex items-center justify-center gap-1 transition-colors">
               Next <MdArrowForward />
             </button>
           </div>
         )}
       </div>
+
+      <CameraCaptureModal
+        open={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={handleCameraCapture}
+        onFallbackUpload={() => selfieInputRef.current?.click()}
+      />
     </DashboardLayout>
   );
 }

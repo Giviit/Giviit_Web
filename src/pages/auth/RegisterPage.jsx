@@ -15,6 +15,7 @@ const STEPS = [
 export default function RegisterPage() {
   const [form, setForm] = useState({ full_name: '', email: '', phone: '', password: '' });
   const [agreed, setAgreed] = useState(false);
+  const [antiFraudAgreed, setAntiFraudAgreed] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const { register, login, loginWithGoogle } = useAuth();
@@ -25,10 +26,16 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!agreed) { toast.error('Please accept the Terms of Service, Privacy Policy, and Cookie Policy to continue.'); return; }
+    if (!antiFraudAgreed) { toast.error('Please confirm the accuracy of your information and accept the Anti-Fraud Policy to continue.'); return; }
     if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     setLoading(true);
     try {
-      await register({ ...form, terms_agreed: true });
+      const newUser = await register({ ...form, terms_agreed: true, identity_agreement_accepted: true });
+      if (!newUser) {
+        toast.success('Account created! Please log in.');
+        navigate('/login');
+        return;
+      }
       toast.success('Account created! Welcome to Giviit.');
       navigate('/dashboard');
     } catch (err) {
@@ -111,8 +118,10 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={async () => {
+              if (!agreed) { toast.error('Please accept the Terms of Service, Privacy Policy, and Cookie Policy to continue.'); return; }
+              if (!antiFraudAgreed) { toast.error('Please confirm the accuracy of your information and accept the Anti-Fraud Policy to continue.'); return; }
               setLoading(true);
-              try { await loginWithGoogle(); }
+              try { await loginWithGoogle(true); }
               catch { toast.error('Google sign-up failed. Please try again.'); setLoading(false); }
             }}
             disabled={loading}
@@ -171,7 +180,7 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              disabled={loading || !agreed}
+              disabled={loading || !agreed || !antiFraudAgreed}
               className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
             >
               {loading ? (
@@ -193,6 +202,19 @@ export default function RegisterPage() {
                 <Link to="/terms" onClick={e => e.stopPropagation()} className="text-primary underline hover:text-primary/80 font-medium">Terms of Service</Link>,{' '}
                 <Link to="/privacy-policy" onClick={e => e.stopPropagation()} className="text-primary underline hover:text-primary/80 font-medium">Privacy Policy</Link>, and{' '}
                 <Link to="/cookie-policy" onClick={e => e.stopPropagation()} className="text-primary underline hover:text-primary/80 font-medium">Cookie Policy</Link>.
+              </span>
+            </label>
+
+            <label className={`flex items-start gap-3 cursor-pointer rounded-xl border p-3 transition-colors ${antiFraudAgreed ? 'border-primary bg-primary/5' : 'border-gray-200 bg-white'}`}>
+              <input
+                type="checkbox"
+                checked={antiFraudAgreed}
+                onChange={e => setAntiFraudAgreed(e.target.checked)}
+                className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0 cursor-pointer"
+              />
+              <span className="text-xs text-gray-500 leading-relaxed">
+                I confirm that all information I provide is accurate and true. I understand that providing false information or running a fraudulent campaign may result in account suspension, fund freezing, and legal action. I agree to Giviit's{' '}
+                <Link to="/terms#prohibited" onClick={e => e.stopPropagation()} className="text-primary underline hover:text-primary/80 font-medium">Anti-Fraud Policy</Link>.
               </span>
             </label>
           </form>

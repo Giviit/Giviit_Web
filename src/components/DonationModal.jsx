@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MdClose, MdLock, MdPayment, MdExpandMore, MdExpandLess } from 'react-icons/md';
 import api from '../utils/api';
 import { formatCurrency } from '../utils/formatters';
@@ -16,6 +16,17 @@ const FREQUENCIES = [
 export default function DonationModal({ campaign, onClose, presetAmount }) {
   const [amount, setAmount] = useState(presetAmount || '');
   const [customAmount, setCustomAmount] = useState('');
+
+  // presetAmount is only used as the initial value above — if the trigger
+  // that opened this modal fires again with a different amount while it's
+  // still mounted (e.g. the small quick-amount popup), this keeps the
+  // selected amount in sync instead of silently keeping the first value.
+  useEffect(() => {
+    if (presetAmount) {
+      setAmount(presetAmount);
+      setCustomAmount('');
+    }
+  }, [presetAmount]);
   const [donorName, setDonorName] = useState('');
   const [donorEmail, setDonorEmail] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
