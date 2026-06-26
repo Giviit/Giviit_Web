@@ -41,6 +41,8 @@ export default function LoginPage() {
       const code = err.response?.data?.code;
       if (code === 'TERMS_NOT_AGREED') {
         toast.error('Your account requires you to accept our Terms of Service. Please contact support@giviit.ng.', { duration: 7000 });
+      } else if (code === 'IDENTITY_AGREEMENT_NOT_AGREED') {
+        toast.error('Your account requires you to confirm our Anti-Fraud Policy. Please contact support@giviit.ng.', { duration: 7000 });
       } else {
         toast.error(err.response?.data?.error || 'Invalid email or password');
       }

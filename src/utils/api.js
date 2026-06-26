@@ -68,14 +68,67 @@ if (MOCK_MODE) {
     }
   );
 } else {
+  // Access tokens expire in ~1h. Without this, any request made after expiry
+  // (e.g. a page refresh hours later) looks identical to a real logout — there
+  // was no attempt to use the refresh_token Supabase already issued alongside it.
+  let isRefreshing = false;
+  let refreshSubscribers = [];
+
+  function onRefreshed(newToken) {
+    refreshSubscribers.forEach(cb => cb(newToken));
+    refreshSubscribers = [];
+  }
+
+  function clearSession() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
+    delete api.defaults.headers.common['Authorization'];
+  }
+
   api.interceptors.response.use(
     res => res,
-    err => {
-      if (err.response?.status === 401) {
-        localStorage.removeItem('token');
-        delete api.defaults.headers.common['Authorization'];
+    async (err) => {
+      const originalRequest = err.config;
+      if (err.response?.status !== 401 || originalRequest?._retry) {
+        return Promise.reject(err);
       }
-      return Promise.reject(err);
+
+      const refreshTokenValue = localStorage.getItem('refresh_token');
+      if (!refreshTokenValue) {
+        clearSession();
+        return Promise.reject(err);
+      }
+
+      originalRequest._retry = true;
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          refreshSubscribers.push((newToken) => {
+            if (!newToken) { reject(err); return; }
+            originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+            resolve(api(originalRequest));
+          });
+        });
+      }
+
+      isRefreshing = true;
+      try {
+        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const res = await axios.post(`${baseURL}/auth/refresh`, { refresh_token: refreshTokenValue });
+        const { token: newToken, refresh_token: newRefreshToken } = res.data;
+        localStorage.setItem('token', newToken);
+        if (newRefreshToken) localStorage.setItem('refresh_token', newRefreshToken);
+        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+        isRefreshing = false;
+        onRefreshed(newToken);
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+        return api(originalRequest);
+      } catch (refreshErr) {
+        isRefreshing = false;
+        onRefreshed(null);
+        clearSession();
+        return Promise.reject(err);
+      }
     }
   );
 }

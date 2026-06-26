@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { MdCheckCircle, MdError, MdShare } from 'react-icons/md';
 import { FaWhatsapp } from 'react-icons/fa';
@@ -13,9 +13,12 @@ export default function DonateSuccessPage() {
   const reference = searchParams.get('reference');
   const [status, setStatus] = useState('loading');
   const [data, setData] = useState(null);
+  const verifiedRef = useRef(null);
 
   useEffect(() => {
     if (!reference) { setStatus('error'); return; }
+    if (verifiedRef.current === reference) return; // StrictMode double-invokes effects in dev
+    verifiedRef.current = reference;
     api.get(`/donations/verify/${reference}`)
       .then(res => { setStatus('success'); setData(res.data); })
       .catch(() => setStatus('error'));

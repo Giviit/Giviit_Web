@@ -12,6 +12,7 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       const token = searchParams.get('token');
+      const refreshToken = searchParams.get('refresh_token');
 
       if (!token) {
         toast.error('Google sign-in failed. Please try again.');
@@ -21,6 +22,7 @@ export default function AuthCallbackPage() {
 
       try {
         localStorage.setItem('token', token);
+        if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
         const res = await api.get('/auth/me');
@@ -32,6 +34,7 @@ export default function AuthCallbackPage() {
         navigate('/dashboard', { replace: true });
       } catch {
         localStorage.removeItem('token');
+        localStorage.removeItem('refresh_token');
         delete api.defaults.headers.common['Authorization'];
         toast.error('Sign-in failed. Please try again.');
         navigate('/login');
