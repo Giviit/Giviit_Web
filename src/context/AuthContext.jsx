@@ -6,6 +6,23 @@ const AuthContext = createContext(null);
 
 const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === 'true';
 
+// No server-side account locking — if the stored session is older than this,
+// the frontend itself drops it from localStorage and sends the user back to
+// login. Simpler than a dormancy/reactivation flow, and the backend's
+// last_active_at tracking still exists for visibility if that's ever needed.
+const INACTIVITY_LIMIT_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
+
+function clearSession() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('last_active_at');
+  delete api.defaults.headers.common['Authorization'];
+}
+
+function markActive() {
+  localStorage.setItem('last_active_at', Date.now().toString());
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,15 +38,19 @@ export function AuthProvider({ children }) {
     }
 
     const token = localStorage.getItem('token');
+    const lastActiveAt = Number(localStorage.getItem('last_active_at') || 0);
+    if (token && lastActiveAt && Date.now() - lastActiveAt > INACTIVITY_LIMIT_MS) {
+      clearSession();
+      setLoading(false);
+      return;
+    }
+
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      markActive();
       api.get('/auth/me')
         .then(res => setUser(res.data.user))
-        .catch(() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('refresh_token');
-          delete api.defaults.headers.common['Authorization'];
-        })
+        .catch(() => clearSession())
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
@@ -55,6 +76,7 @@ export function AuthProvider({ children }) {
     const { token, refresh_token, user: userData } = res.data;
     localStorage.setItem('token', token);
     if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
+    markActive();
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setUser(userData);
     return userData;
@@ -68,14 +90,16 @@ export function AuthProvider({ children }) {
       return mockUser;
     }
     const res = await api.post('/auth/register', data);
-    const { token, refresh_token, user: userData } = res.data;
+    const { token, refresh_token, user: userData, message, email } = res.data;
     if (!token) {
-      // Backend created the account but couldn't auto-sign-in (rare) — caller
-      // should route to /login instead of /dashboard in this case.
-      return null;
+      // No session yet — either a pending email-verification (message+email
+      // present) or a rare sign-in failure right after account creation.
+      // Caller routes accordingly instead of going straight to /dashboard.
+      return message ? { pendingVerification: true, email } : null;
     }
     localStorage.setItem('token', token);
     if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
+    markActive();
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setUser(userData);
     return userData;
@@ -101,9 +125,7 @@ export function AuthProvider({ children }) {
       return;
     }
     try { await api.post('/auth/logout'); } catch {}
-    localStorage.removeItem('token');
-    localStorage.removeItem('refresh_token');
-    delete api.defaults.headers.common['Authorization'];
+    clearSession();
     setUser(null);
   };
 

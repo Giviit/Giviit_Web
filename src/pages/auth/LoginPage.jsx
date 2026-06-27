@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation, useSearchParams } from 'react-router-do
 import { MdEmail, MdLock, MdVisibility, MdVisibilityOff, MdArrowForward } from 'react-icons/md';
 import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import GiviitLogo from '../../components/GiviitLogo';
 
@@ -11,6 +12,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState(null);
+  const [resending, setResending] = useState(false);
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,6 +35,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setUnverifiedEmail(null);
     setLoading(true);
     try {
       await login(email, password);
@@ -43,11 +47,27 @@ export default function LoginPage() {
         toast.error('Your account requires you to accept our Terms of Service. Please contact support@giviit.ng.', { duration: 7000 });
       } else if (code === 'IDENTITY_AGREEMENT_NOT_AGREED') {
         toast.error('Your account requires you to confirm our Anti-Fraud Policy. Please contact support@giviit.ng.', { duration: 7000 });
+      } else if (code === 'EMAIL_NOT_VERIFIED') {
+        setUnverifiedEmail(err.response?.data?.email || email);
+        toast.error('Please verify your email first');
       } else {
         toast.error(err.response?.data?.error || 'Invalid email or password');
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (resending) return;
+    setResending(true);
+    try {
+      await api.post('/auth/resend-verification', { email: unverifiedEmail });
+      toast.success('Verification email resent');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to resend');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -192,6 +212,16 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+
+            {unverifiedEmail && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-sm">
+                <p className="text-amber-800 font-medium mb-2">Please verify your email first</p>
+                <button type="button" onClick={handleResend} disabled={resending}
+                  className="text-primary font-semibold text-xs hover:underline disabled:opacity-50">
+                  {resending ? 'Sending...' : 'Resend verification email'}
+                </button>
+              </div>
+            )}
 
             <button
               type="submit"

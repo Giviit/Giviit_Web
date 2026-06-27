@@ -28,6 +28,7 @@ export default function EditCampaign() {
     title: '', category: '', goal_amount: '',
     deadline: '', description: '', story: '', is_urgent: false,
     prayer_wall_enabled: false,
+    facebook_handle: '', instagram_handle: '', twitter_handle: '',
   });
   const [loading, setLoading] = useState(false);
 
@@ -43,6 +44,9 @@ export default function EditCampaign() {
         story: data.story?.replace(/<[^>]+>/g, '') || '',
         is_urgent: data.is_urgent || false,
         prayer_wall_enabled: data.prayer_wall_enabled || false,
+        facebook_handle: data.facebook_handle || '',
+        instagram_handle: data.instagram_handle || '',
+        twitter_handle: data.twitter_handle || '',
       });
     }
   }, [data]);
@@ -206,6 +210,28 @@ export default function EditCampaign() {
               rows={8}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
             />
+          </div>
+
+          {/* Social Media */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <label className="block text-sm font-bold text-dark mb-1.5">Social Media <span className="text-gray-400 font-normal">(Optional)</span></label>
+            <p className="text-xs text-gray-400 mb-3">Help donors follow your journey</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                { field: 'facebook_handle', label: 'Facebook handle' },
+                { field: 'instagram_handle', label: 'Instagram handle' },
+                { field: 'twitter_handle', label: 'Twitter / X handle' },
+              ].map(({ field, label }) => (
+                <div key={field}>
+                  <label className="block text-xs font-semibold text-dark mb-1">{label}</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">@</span>
+                    <input value={form[field]} onChange={handleChange(field)} maxLength={50} placeholder="yourhandle"
+                      className="w-full pl-8 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Prayer Wall */}

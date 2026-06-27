@@ -266,8 +266,58 @@ Assignment: You may not assign your rights under these Terms without our written
 Force majeure: Giviit is not liable for delays or failures caused by events beyond its reasonable control, including power outages, internet disruptions, acts of God, or government actions.`,
   },
   {
+    id: 'email-verification',
+    title: '21. Email Verification',
+    body: `Users must verify their email address before accessing platform features. Unverified accounts will have limited access.`,
+  },
+  {
+    id: 'inactivity',
+    title: '22. Account Inactivity Policy',
+    body: `If you have not logged in for an extended period, your saved session will expire and you will be asked to log in again. This does not affect your account, campaigns, or funds — it is simply a security measure.
+
+You are responsible for maintaining account access and withdrawing funds in a timely manner.`,
+  },
+  {
+    id: 'age-restriction',
+    title: '23. Age Restriction',
+    body: `Users must be 18 years or older to create campaigns. Age is verified through government-issued ID (NIN).
+
+Accounts found to belong to users under 18 will be restricted from campaign creation.`,
+  },
+  {
+    id: 'campaign-documentation',
+    title: '24. Campaign Documentation',
+    body: `Certain campaign categories require supporting documents for verification. These documents are strictly confidential and will never be shared publicly. They are used solely by Giviit's trust and safety team to verify campaign authenticity.
+
+Uploading false or misleading documents will result in immediate account suspension and potential legal action.`,
+  },
+  {
+    id: 'fraud-policy-refunds',
+    title: '25. Fraud Policy and Refunds',
+    body: `Giviit maintains a fraud reserve fund of 0.5% of all donations. In the event a campaign is found fraudulent while funds remain on the platform, all donors will be automatically refunded.
+
+Giviit cannot guarantee refunds for funds already withdrawn by campaign creators found to be fraudulent after withdrawal.`,
+  },
+  {
+    id: 'platform-fees-summary',
+    title: '26. Platform Fees',
+    body: `Giviit charges a 3% platform fee on all funds raised. A 0.5% fraud protection reserve is applied to all donations. These fees are deducted before withdrawal.`,
+  },
+  {
+    id: 'social-media',
+    title: '27. Social Media',
+    body: `Social media handles provided during campaign creation are publicly displayed. Users are responsible for the accuracy of their social media information.`,
+  },
+  {
+    id: 'dormancy-fund-safety',
+    title: '28. Account Dormancy and Fund Safety',
+    body: `If your session expires while you have funds pending withdrawal, those withdrawal requests are not affected — simply log back in to continue managing them.
+
+Giviit is not liable for funds left unclaimed due to extended account inactivity.`,
+  },
+  {
     id: 'contact',
-    title: '21. Contact Us',
+    title: '29. Contact Us',
     body: `For questions about these Terms, please contact:
 
 Giviit Technologies Ltd

@@ -11,6 +11,7 @@ import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../../utils/formatters';
+import { COUNTRIES, NIGERIAN_STATES } from '../../utils/nigerianStates';
 
 const CATEGORIES = ['medical', 'education', 'business', 'emergency', 'funeral', 'church', 'community', 'other'];
 const MAX_GOAL_AMOUNT = 50000000;
@@ -65,7 +66,39 @@ export default function CreateCampaign() {
     title: '', category: '', goal_amount: '', deadline: '',
     description: '', story: '', is_urgent: false,
     urgency_reason: '', urgency_deadline: '',
+    facebook_handle: '', instagram_handle: '', twitter_handle: '',
+    creator_country: 'NG', creator_state: '', creator_city: '',
   });
+  const [prefilled, setPrefilled] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
+
+  // Returning creators shouldn't have to re-type where they're fundraising
+  // from or re-add their social handles — silently pull them from the
+  // creator's most recent campaign if this is a fresh (non-draft) form.
+  useEffect(() => {
+    if (draft) return;
+    api.get('/campaigns?my=true').then((res) => {
+      const last = res.data.campaigns?.[0];
+      if (!last) return;
+      const fillable = ['creator_state', 'creator_city', 'facebook_handle', 'instagram_handle', 'twitter_handle'];
+      const hasAnything = fillable.some((f) => last[f]) || (last.creator_country && last.creator_country !== 'NG');
+      if (!hasAnything) return;
+      setForm((p) => ({
+        ...p,
+        creator_country: last.creator_country || p.creator_country,
+        creator_state: last.creator_state || p.creator_state,
+        creator_city: last.creator_city || p.creator_city,
+        facebook_handle: last.facebook_handle || p.facebook_handle,
+        instagram_handle: last.instagram_handle || p.instagram_handle,
+        twitter_handle: last.twitter_handle || p.twitter_handle,
+      }));
+      setPrefilled(true);
+    }).catch(() => {});
+  }, []);
+  // Non-urgent campaigns don't need a deadline at all — this just gates
+  // whether the date picker is shown, separate from form.deadline itself.
+  const [wantsDeadline, setWantsDeadline] = useState(!!draft?.form?.deadline);
 
   // ── Step 3: Images (not persisted — see note above) ──
   const [coverImage, setCoverImage] = useState(null);
@@ -163,7 +196,7 @@ export default function CreateCampaign() {
   // ── Step validation ──
   const canProceed = () => {
     if (step === 1) return identity.nin.length === 11 && !!identity.selfieFile && !!identity.idDocFile && identity.agreed;
-    if (step === 2) return form.title && form.category && form.goal_amount && form.description && form.story && Number(form.goal_amount) <= MAX_GOAL_AMOUNT;
+    if (step === 2) return form.title && form.category && form.goal_amount && form.description && form.story && Number(form.goal_amount) <= MAX_GOAL_AMOUNT && (!form.is_urgent || !!form.deadline);
     if (step === 3) return !!coverImage || !!coverPreview;
     if (step === 4) return milestones.every(m => !m.amount || Number(m.amount) <= Number(form.goal_amount || 0));
     return true;
@@ -431,9 +464,35 @@ export default function CreateCampaign() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-dark mb-1.5">Deadline (optional)</label>
-                  <input type="date" value={form.deadline} onChange={set(setForm)('deadline')} min={today}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary outline-none text-sm" />
+                  <label className="block text-sm font-semibold text-dark mb-1.5">
+                    Deadline {form.is_urgent ? <span className="text-red-500">*</span> : <span className="text-gray-400 font-normal">(optional)</span>}
+                  </label>
+                  {form.is_urgent ? (
+                    <>
+                      <input type="date" value={form.deadline} onChange={set(setForm)('deadline')} min={today}
+                        className={`w-full px-4 py-3 border-2 rounded-xl outline-none text-sm ${!form.deadline ? 'border-red-300 bg-red-50 focus:border-red-400' : 'border-gray-200 focus:border-primary'}`} />
+                      <p className="text-xs text-gray-400 mt-1">Urgent campaigns must have a deadline.</p>
+                    </>
+                  ) : (
+                    <>
+                      <label className="flex items-center gap-2 mb-2 cursor-pointer">
+                        <input type="checkbox" checked={wantsDeadline}
+                          onChange={e => {
+                            setWantsDeadline(e.target.checked);
+                            if (!e.target.checked) setForm(p => ({ ...p, deadline: '' }));
+                          }}
+                          className="w-4 h-4 accent-primary" />
+                        <span className="text-xs text-gray-600">I want to set an end date</span>
+                      </label>
+                      {wantsDeadline && (
+                        <input type="date" value={form.deadline} onChange={set(setForm)('deadline')} min={today}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary outline-none text-sm" />
+                      )}
+                      {!wantsDeadline && (
+                        <p className="text-xs text-gray-400">Your campaign will run with no end date until you close it or it's fully funded.</p>
+                      )}
+                    </>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 pt-6">
                   <input type="checkbox" id="is_urgent" checked={form.is_urgent} onChange={set(setForm)('is_urgent')} className="w-4 h-4 accent-primary" />
@@ -480,6 +539,87 @@ export default function CreateCampaign() {
                 rows={10} required
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary outline-none text-sm resize-none" />
               <p className="text-xs text-gray-400 mt-1">{form.story.length} characters</p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-4">
+              <div>
+                <h3 className="font-bold text-dark">Where are you creating this campaign from?</h3>
+                <p className="text-xs text-gray-400 mt-0.5">This helps donors find local campaigns</p>
+              </div>
+              {prefilled && (
+                <p className="text-xs text-primary bg-primary/5 rounded-lg px-3 py-2">Pre-filled from your profile. You can change this.</p>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="relative">
+                  <label className="block text-sm font-semibold text-dark mb-1.5">Country</label>
+                  <input
+                    value={countryDropdownOpen ? countrySearch : (COUNTRIES.find(c => c.code === form.creator_country)?.name || '')}
+                    onChange={(e) => setCountrySearch(e.target.value)}
+                    onFocus={() => { setCountryDropdownOpen(true); setCountrySearch(''); }}
+                    placeholder="Search country..."
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary outline-none text-sm"
+                  />
+                  {countryDropdownOpen && (
+                    <div className="absolute z-20 mt-1 w-full max-h-52 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg">
+                      {COUNTRIES.filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase())).map((c) => (
+                        <button key={c.code} type="button"
+                          onClick={() => {
+                            setForm(p => ({ ...p, creator_country: c.code, creator_state: c.code === p.creator_country ? p.creator_state : '' }));
+                            setCountryDropdownOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center justify-between">
+                          <span className="text-dark">{c.name}</span>
+                          <span className="text-gray-400 text-xs font-mono">{c.code}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-dark mb-1.5">{form.creator_country === 'NG' ? 'State' : 'State/Region'}</label>
+                  {form.creator_country === 'NG' ? (
+                    <select value={form.creator_state} onChange={set(setForm)('creator_state')}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary outline-none text-sm bg-white">
+                      <option value="">Select state</option>
+                      {NIGERIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  ) : (
+                    <input value={form.creator_state} onChange={set(setForm)('creator_state')}
+                      placeholder="e.g. London"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary outline-none text-sm" />
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-dark mb-1.5">City <span className="text-gray-400 font-normal">(optional)</span></label>
+                <input value={form.creator_city} onChange={set(setForm)('creator_city')}
+                  placeholder="e.g. Ikeja"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary outline-none text-sm" />
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-4">
+              <div>
+                <h3 className="font-bold text-dark">Social Media <span className="text-gray-400 font-normal text-sm">(Optional)</span></h3>
+                <p className="text-xs text-gray-400 mt-0.5">Help donors follow your journey</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[
+                  { field: 'facebook_handle', label: 'Facebook handle' },
+                  { field: 'instagram_handle', label: 'Instagram handle' },
+                  { field: 'twitter_handle', label: 'Twitter / X handle' },
+                ].map(({ field, label }) => (
+                  <div key={field}>
+                    <label className="block text-sm font-semibold text-dark mb-1.5">{label}</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">@</span>
+                      <input value={form[field]} onChange={set(setForm)(field)} maxLength={50}
+                        placeholder="yourhandle"
+                        className="w-full pl-8 pr-3 py-3 border-2 border-gray-200 rounded-xl focus:border-primary outline-none text-sm" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -862,6 +1002,7 @@ export default function CreateCampaign() {
             <button type="button" onClick={() => {
               if (canProceed() || step >= 5) { setStep(step + 1); return; }
               if (step === 1 && !identity.agreed) { toast.error('Please confirm the accuracy of your information and accept the Anti-Fraud Policy to continue.'); return; }
+              if (step === 2 && form.is_urgent && !form.deadline) { toast.error('Urgent campaigns must have a deadline date and time'); return; }
               if (step === 2 && Number(form.goal_amount) > MAX_GOAL_AMOUNT) { toast.error(`Campaign goals are capped at ${formatCurrency(MAX_GOAL_AMOUNT)}. Need more? Contact admin at support@giviit.ng.`); return; }
               if (step === 4) { toast.error("A milestone amount can't exceed your overall campaign goal."); return; }
               toast.error('Please complete all required fields');

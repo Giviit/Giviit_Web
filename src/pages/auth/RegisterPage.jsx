@@ -1,10 +1,13 @@
-﻿import { useState } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { MdPerson, MdEmail, MdPhone, MdLock, MdVisibility, MdVisibilityOff, MdArrowForward } from 'react-icons/md';
+import { MdPerson, MdEmail, MdPhone, MdLock, MdVisibility, MdVisibilityOff, MdArrowForward, MdMarkEmailRead } from 'react-icons/md';
 import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import GiviitLogo from '../../components/GiviitLogo';
+
+const RESEND_COOLDOWN_S = 60;
 
 const STEPS = [
   { icon: '01', title: 'Create your campaign', desc: 'Set it up in minutes' },
@@ -18,8 +21,17 @@ export default function RegisterPage() {
   const [antiFraudAgreed, setAntiFraudAgreed] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resending, setResending] = useState(false);
   const { register, login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setInterval(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearInterval(t);
+  }, [resendCooldown]);
 
   const handleChange = (field) => (e) => setForm(p => ({ ...p, [field]: e.target.value }));
 
@@ -31,6 +43,11 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const newUser = await register({ ...form, terms_agreed: true, identity_agreement_accepted: true });
+      if (newUser?.pendingVerification) {
+        setPendingEmail(newUser.email);
+        setResendCooldown(RESEND_COOLDOWN_S);
+        return;
+      }
       if (!newUser) {
         toast.success('Account created! Please log in.');
         navigate('/login');
@@ -44,6 +61,47 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  const handleResend = async () => {
+    if (resendCooldown > 0 || resending) return;
+    setResending(true);
+    try {
+      await api.post('/auth/resend-verification', { email: pendingEmail });
+      toast.success('Verification email resent');
+      setResendCooldown(RESEND_COOLDOWN_S);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to resend. Please try again.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  if (pendingEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6 py-12 bg-gray-50">
+        <div className="w-full max-w-sm text-center">
+          <div className="w-16 h-16 rounded-2xl icon-green flex items-center justify-center mx-auto mb-5">
+            <MdMarkEmailRead className="text-white text-3xl" />
+          </div>
+          <h1 className="text-2xl font-black text-dark mb-2">Check your email</h1>
+          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+            We sent a verification link to <strong className="text-dark">{pendingEmail}</strong>. Click the link to activate your account.
+          </p>
+          <button
+            onClick={handleResend}
+            disabled={resendCooldown > 0 || resending}
+            className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm transition-all mb-4"
+          >
+            {resending ? 'Sending...' : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend verification email'}
+          </button>
+          <p className="text-xs text-gray-400">
+            Wrong email?{' '}
+            <button onClick={() => setPendingEmail(null)} className="text-primary font-semibold hover:underline">Go back and register again</button>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -178,18 +236,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading || !agreed || !antiFraudAgreed}
-              className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
-            >
-              {loading ? (
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <><MdArrowForward /> Create Free Account</>
-              )}
-            </button>
-
             <label className={`flex items-start gap-3 cursor-pointer rounded-xl border p-3 transition-colors ${agreed ? 'border-primary bg-primary/5' : 'border-gray-200 bg-white'}`}>
               <input
                 type="checkbox"
@@ -217,6 +263,18 @@ export default function RegisterPage() {
                 <Link to="/terms#prohibited" onClick={e => e.stopPropagation()} className="text-primary underline hover:text-primary/80 font-medium">Anti-Fraud Policy</Link>.
               </span>
             </label>
+
+            <button
+              type="submit"
+              disabled={loading || !agreed || !antiFraudAgreed}
+              className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
+            >
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <><MdArrowForward /> Create Free Account</>
+              )}
+            </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-500">

@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Users, Clock, Zap, BadgeCheck, Cake, PartyPopper, Check } from 'lucide-react';
 import { CountdownBadge } from './CountdownTimer';
-import { formatCurrency, formatDaysLeft, formatProgress } from '../utils/formatters';
+import { formatCurrency, getTimeStatus, formatProgress } from '../utils/formatters';
 
 export default function CampaignCard({ campaign }) {
   const pct = formatProgress(campaign.raised_amount ?? campaign.amount_raised, campaign.goal_amount);
   const isGoalReached = pct >= 100;
   const isUrgentWithTimer = campaign.is_urgent && campaign.urgency_deadline;
+  const timeStatus = getTimeStatus(campaign.deadline);
 
   const birthdayDays = campaign.is_birthday && campaign.birthday_date
     ? Math.ceil((new Date(campaign.birthday_date) - Date.now()) / (1000 * 60 * 60 * 24))
@@ -128,10 +129,14 @@ export default function CampaignCard({ campaign }) {
                 <Users size={10} />
                 {(campaign.donor_count || 0).toLocaleString()}
               </span>
-              <span className="flex items-center gap-0.5 text-[11px] text-gray-400">
-                <Clock size={10} />
-                {formatDaysLeft(campaign.deadline)}
-              </span>
+              {timeStatus && (
+                <span className={`flex items-center gap-0.5 text-[11px] font-semibold ${
+                  timeStatus.color === 'red' ? 'text-red-500' : timeStatus.color === 'gray' ? 'text-gray-400' : 'text-green-600'
+                }`}>
+                  <Clock size={10} />
+                  {timeStatus.label}
+                </span>
+              )}
             </div>
           </div>
         </div>

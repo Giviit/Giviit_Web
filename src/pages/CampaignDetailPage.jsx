@@ -6,6 +6,7 @@ import {
   Users, Calendar, Flag, ArrowLeft, Users2, Cake,
   PartyPopper, BadgeCheck, Zap, Share2, Copy, Check,
 } from 'lucide-react';
+import { FaFacebook, FaInstagram, FaTwitter } from 'react-icons/fa';
 import { stripEmoji } from '../utils/formatters';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -17,8 +18,9 @@ import MilestoneTracker from '../components/MilestoneTracker';
 import GuarantorBadge from '../components/GuarantorBadge';
 import DiasporaLeaderboard from '../components/DiasporaLeaderboard';
 import SapaBanner from '../components/SapaBanner';
+import { UrgencyBanner } from '../components/CountdownTimer';
 import api from '../utils/api';
-import { formatCurrency, formatDaysLeft, formatProgress, formatTimeAgo, getCampaignShareUrl } from '../utils/formatters';
+import { formatCurrency, getTimeStatus, formatProgress, formatTimeAgo, getCampaignShareUrl } from '../utils/formatters';
 
 function BirthdayBanner({ campaign }) {
   if (!campaign.is_birthday || !campaign.birthday_date) return null;
@@ -160,6 +162,9 @@ export default function CampaignDetailPage() {
   );
 
   const pct = formatProgress(campaign.raised_amount, campaign.goal_amount);
+  const timeStatus = getTimeStatus(campaign.deadline);
+  const isGoalReached = pct >= 100;
+  const isClosed = campaign.status === 'completed';
   const images = [campaign.cover_image, ...(campaign.gallery || [])].filter(Boolean);
   const donations = donationsData?.donations || [];
   const updates = updatesData || [];
@@ -263,6 +268,9 @@ export default function CampaignDetailPage() {
               )}
             </div>
 
+            {/* Urgency countdown banner */}
+            <UrgencyBanner campaign={campaign} />
+
             {/* ── 3. PROGRESS + STATS ── */}
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
               <div className="flex items-end justify-between mb-3">
@@ -275,31 +283,46 @@ export default function CampaignDetailPage() {
                 <span className="text-2xl font-black text-primary">{pct}%</span>
               </div>
               <ProgressBar percentage={pct} className="mb-3" urgent={campaign.is_urgent && !!campaign.urgency_deadline} />
-              {pct >= 100 && (
-                <p className="text-primary text-sm font-bold text-center mb-3">Goal Reached!</p>
+              {isGoalReached && (
+                <p className="text-primary text-sm font-bold text-center mb-3">
+                  Goal Reached! 🎉{isClosed ? ' This campaign is now closed.' : ''}
+                </p>
               )}
-              <div className="grid grid-cols-2 gap-3">
+              <div className={`grid gap-3 ${timeStatus ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 <div className="text-center bg-gray-50 rounded-xl p-3">
                   <div className="flex items-center justify-center gap-1 text-gray-400 text-xs mb-1">
                     <Users size={13} /> Donors
                   </div>
                   <p className="font-black text-dark">{(campaign.donor_count || 0).toLocaleString()}</p>
                 </div>
-                <div className="text-center bg-gray-50 rounded-xl p-3">
-                  <div className="flex items-center justify-center gap-1 text-gray-400 text-xs mb-1">
-                    <Calendar size={13} /> Days Left
+                {timeStatus && (
+                  <div className="text-center bg-gray-50 rounded-xl p-3">
+                    <div className="flex items-center justify-center gap-1 text-gray-400 text-xs mb-1">
+                      <Calendar size={13} /> Days Left
+                    </div>
+                    <p className={`font-black text-sm ${
+                      timeStatus.color === 'red' ? 'text-red-500' : timeStatus.color === 'gray' ? 'text-gray-400' : 'text-dark'
+                    }`}>{timeStatus.label}</p>
                   </div>
-                  <p className="font-black text-dark text-sm">{formatDaysLeft(campaign.deadline)}</p>
-                </div>
+                )}
               </div>
             </div>
 
             {/* ── 4. DONATE + WHATSAPP ── */}
             <div ref={donateRef} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-              <button onClick={() => openDonate()}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-black py-4 rounded-xl text-base transition-colors shadow-md shadow-primary/20 mb-3">
-                Donate Now
-              </button>
+              {isClosed ? (
+                <div className="bg-gray-50 border border-gray-200 rounded-xl py-4 px-4 text-center mb-3">
+                  <p className="font-bold text-dark text-sm">
+                    {isGoalReached ? 'This campaign reached its goal and is now closed.' : 'This campaign has closed.'}
+                  </p>
+                  <p className="text-gray-400 text-xs mt-1">Donations are no longer being accepted.</p>
+                </div>
+              ) : (
+                <button onClick={() => openDonate()}
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-black py-4 rounded-xl text-base transition-colors shadow-md shadow-primary/20 mb-3">
+                  Donate Now
+                </button>
+              )}
               <p className="text-[11px] text-center text-gray-400 mb-4">Secured by Paystack · No amount is too small</p>
               <div className="flex gap-2 flex-wrap">
                 <WhatsAppShareBtn campaign={campaign} />
@@ -307,14 +330,16 @@ export default function CampaignDetailPage() {
               </div>
 
               {/* Quick amounts */}
-              <div className="flex gap-2 flex-wrap mt-4 pt-4 border-t border-gray-50">
-                {[500, 1000, 2500, 5000, 10000].map(amt => (
-                  <button key={amt} onClick={() => openDonate(amt)}
-                    className="text-xs font-bold bg-gray-50 hover:bg-primary/10 hover:text-primary border border-gray-100 hover:border-primary/30 px-3 py-1.5 rounded-lg transition-all">
-                    {formatCurrency(amt)}
-                  </button>
-                ))}
-              </div>
+              {!isClosed && (
+                <div className="flex gap-2 flex-wrap mt-4 pt-4 border-t border-gray-50">
+                  {[500, 1000, 2500, 5000, 10000].map(amt => (
+                    <button key={amt} onClick={() => openDonate(amt)}
+                      className="text-xs font-bold bg-gray-50 hover:bg-primary/10 hover:text-primary border border-gray-100 hover:border-primary/30 px-3 py-1.5 rounded-lg transition-all">
+                      {formatCurrency(amt)}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Birthday banner */}
@@ -490,6 +515,35 @@ export default function CampaignDetailPage() {
                 </div>
               )}
 
+              {/* Social links — only icons with a handle are shown */}
+              {(campaign.facebook_url || campaign.instagram_url || campaign.twitter_url) && (
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-3">
+                    Follow {campaign.creator?.full_name || 'this'}'s journey
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {campaign.facebook_url && (
+                      <a href={campaign.facebook_url} target="_blank" rel="noopener noreferrer"
+                        className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors">
+                        <FaFacebook size={16} />
+                      </a>
+                    )}
+                    {campaign.instagram_url && (
+                      <a href={campaign.instagram_url} target="_blank" rel="noopener noreferrer"
+                        className="w-9 h-9 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center hover:bg-pink-100 transition-colors">
+                        <FaInstagram size={16} />
+                      </a>
+                    )}
+                    {campaign.twitter_url && (
+                      <a href={campaign.twitter_url} target="_blank" rel="noopener noreferrer"
+                        className="w-9 h-9 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                        <FaTwitter size={16} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Quick donate CTA (sidebar — only visible on desktop) */}
               <div className="hidden lg:block bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
                 <div className="mb-4">
@@ -503,10 +557,18 @@ export default function CampaignDetailPage() {
                   <ProgressBar percentage={pct} className="mb-3"
                     urgent={campaign.is_urgent && !!campaign.urgency_deadline} />
                 </div>
-                <button onClick={() => openDonate()}
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-md shadow-primary/20 mb-2">
-                  Donate Now
-                </button>
+                {isClosed ? (
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl py-3 px-3 text-center mb-2">
+                    <p className="font-bold text-dark text-xs">
+                      {isGoalReached ? 'Goal reached — campaign closed' : 'Campaign closed'}
+                    </p>
+                  </div>
+                ) : (
+                  <button onClick={() => openDonate()}
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-md shadow-primary/20 mb-2">
+                    Donate Now
+                  </button>
+                )}
                 <p className="text-[11px] text-center text-gray-400 mb-3">Secured by Paystack</p>
                 <div className="flex gap-2">
                   <WhatsAppShareBtn campaign={campaign} />
@@ -518,7 +580,7 @@ export default function CampaignDetailPage() {
       </div>
 
       {/* ── STICKY BOTTOM BAR (mobile + when donate scrolled out of view) ── */}
-      {showStickyBar && (
+      {showStickyBar && !isClosed && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-2xl px-4 py-3 flex items-center gap-3 safe-bottom">
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-dark truncate">{campaign.title}</p>
@@ -533,11 +595,11 @@ export default function CampaignDetailPage() {
         </div>
       )}
 
-      {showModal && (
+      {showModal && !isClosed && (
         <DonationModal campaign={campaign} onClose={() => setShowModal(false)} presetAmount={presetAmount} />
       )}
 
-      <SapaBanner campaign={campaign} onDonate={openDonate} />
+      {!isClosed && <SapaBanner campaign={campaign} onDonate={openDonate} />}
 
       <Footer />
     </div>
