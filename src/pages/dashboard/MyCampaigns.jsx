@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
   MdAddCircle, MdEdit, MdVisibility, MdUpdate,
-  MdFlag, MdWarning, MdSend, MdClose,
+  MdFlag, MdWarning, MdSend, MdClose, MdCelebration, MdLock,
 } from 'react-icons/md';
 import DashboardLayout from '../../components/DashboardLayout';
 import api from '../../utils/api';
@@ -101,6 +101,7 @@ function AppealModal({ campaign, onClose }) {
 }
 
 export default function MyCampaigns() {
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ['my-campaigns'],
     queryFn: () => api.get('/campaigns?my=true').then(r => r.data),
@@ -108,6 +109,7 @@ export default function MyCampaigns() {
 
   const [appealTarget, setAppealTarget] = useState(null);
   const [submittedAppeals, setSubmittedAppeals] = useState(new Set());
+  const [closingId, setClosingId] = useState(null);
 
   const campaigns = data?.campaigns || [];
   const flaggedCount = campaigns.filter(c => c.is_flagged).length;
@@ -117,6 +119,20 @@ export default function MyCampaigns() {
       setSubmittedAppeals(prev => new Set([...prev, appealTarget.id]));
     }
     setAppealTarget(null);
+  };
+
+  const handleCloseCampaign = async (campaign) => {
+    if (!window.confirm(`Close "${campaign.title}"? This stops new donations immediately and can't be undone.`)) return;
+    setClosingId(campaign.id);
+    try {
+      await api.put(`/campaigns/${campaign.id}/close`);
+      toast.success('Campaign closed. You can now withdraw your funds.');
+      queryClient.invalidateQueries({ queryKey: ['my-campaigns'] });
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to close campaign');
+    } finally {
+      setClosingId(null);
+    }
   };
 
   return (
@@ -207,6 +223,23 @@ export default function MyCampaigns() {
                   </div>
                 )}
 
+                {/* Goal-reached celebration */}
+                {c.goal_reached_at && (
+                  <div className="px-5 py-3 border-b flex items-center justify-between flex-wrap gap-3"
+                    style={{ background: 'linear-gradient(135deg,#fffbeb,#fef3c7)', borderColor: '#fde68a' }}>
+                    <div className="flex items-start gap-2 flex-1 min-w-0">
+                      <MdCelebration className="text-amber-500 text-lg mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-amber-800">Goal Reached! Campaign closed automatically.</p>
+                        <p className="text-xs text-amber-700 mt-0.5">You can now withdraw your funds.</p>
+                      </div>
+                    </div>
+                    <Link to="/dashboard/withdrawals" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-colors flex-shrink-0">
+                      Withdraw Funds
+                    </Link>
+                  </div>
+                )}
+
                 <div className="flex">
                   <div className="w-24 sm:w-36 h-full flex-shrink-0 bg-gray-100">
                     {c.cover_image ? (
@@ -242,6 +275,15 @@ export default function MyCampaigns() {
                       <Link to={`/dashboard/campaigns/${c.id}/update`} className="inline-flex items-center gap-1 text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-full transition-colors font-medium">
                         <MdUpdate className="text-sm" /> Post Update
                       </Link>
+                      {c.status === 'active' && !c.is_flagged && (
+                        <button
+                          onClick={() => handleCloseCampaign(c)}
+                          disabled={closingId === c.id}
+                          className="inline-flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-full transition-colors font-medium disabled:opacity-50"
+                        >
+                          <MdLock className="text-sm" /> {closingId === c.id ? 'Closing...' : 'Close Campaign'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

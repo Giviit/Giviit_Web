@@ -20,6 +20,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import AuthCallbackPage from './pages/auth/AuthCallbackPage';
+import VerifyEmailSuccessPage from './pages/auth/VerifyEmailSuccessPage';
 
 // Dashboard pages
 import DashboardHome from './pages/dashboard/DashboardHome';
@@ -32,15 +33,18 @@ import EditCampaign from './pages/dashboard/EditCampaign';
 import OfflineDonations from './pages/dashboard/OfflineDonations';
 import CampaignMembers from './pages/dashboard/CampaignMembers';
 import PledgeConfirmPage from './pages/PledgeConfirmPage';
+import PledgePayPage from './pages/PledgePayPage';
 
 // Guards
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
+import CookieBanner from './components/ui/CookieBanner';
 
 function App() {
   return (
     <div className="min-h-screen">
       <ScrollToTop />
+      <CookieBanner />
       <Routes>
         {/* Public */}
         <Route path="/" element={<HomePage />} />
@@ -48,6 +52,7 @@ function App() {
         <Route path="/campaign/:slug" element={<CampaignDetailPage />} />
         <Route path="/donate/success" element={<DonateSuccessPage />} />
         <Route path="/pledge/confirm" element={<PledgeConfirmPage />} />
+        <Route path="/pledge/:id/pay" element={<PledgePayPage />} />
         <Route path="/vouch/:token" element={<GuarantorVouchPage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
@@ -63,6 +68,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/verify-email/success" element={<VerifyEmailSuccessPage />} />
 
         {/* Dashboard — authenticated */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { MdClose, MdLock, MdPayment, MdExpandMore, MdExpandLess } from 'react-icons/md';
+import { useState, useEffect } from 'react';
+import { MdClose, MdLock, MdPayment, MdExpandMore, MdExpandLess, MdCreditCard, MdAccountBalance, MdDialpad } from 'react-icons/md';
 import api from '../utils/api';
 import { formatCurrency } from '../utils/formatters';
 import toast from 'react-hot-toast';
@@ -12,16 +12,33 @@ const FREQUENCIES = [
   { value: 'biweekly', label: 'Every 2 weeks' },
   { value: 'monthly', label: 'Monthly' },
 ];
+const PAYMENT_METHODS = [
+  { value: 'card', label: 'Card', icon: MdCreditCard },
+  { value: 'bank_transfer', label: 'Bank Transfer', icon: MdAccountBalance },
+  { value: 'ussd', label: 'USSD', icon: MdDialpad },
+];
 
 export default function DonationModal({ campaign, onClose, presetAmount }) {
   const [amount, setAmount] = useState(presetAmount || '');
   const [customAmount, setCustomAmount] = useState('');
+
+  // presetAmount is only used as the initial value above — if the trigger
+  // that opened this modal fires again with a different amount while it's
+  // still mounted (e.g. the small quick-amount popup), this keeps the
+  // selected amount in sync instead of silently keeping the first value.
+  useEffect(() => {
+    if (presetAmount) {
+      setAmount(presetAmount);
+      setCustomAmount('');
+    }
+  }, [presetAmount]);
   const [donorName, setDonorName] = useState('');
   const [donorEmail, setDonorEmail] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [message, setMessage] = useState('');
   const [prayer, setPrayer] = useState('');
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('card');
 
   // Pledge mode
   const [pledgeMode, setPledgeMode] = useState(false);
@@ -45,8 +62,10 @@ export default function DonationModal({ campaign, onClose, presetAmount }) {
     setLoading(true);
     try {
       if (pledgeMode) {
-        // Create pledge
-        await api.post('/pledges', {
+        // Create the pledge and immediately charge the first installment —
+        // redirect to Paystack just like a one-time donation. The pledge
+        // only becomes "real" once that first payment actually goes through.
+        const res = await api.post('/pledges', {
           campaign_id: campaign.id,
           donor_name: donorName,
           donor_email: donorEmail,
@@ -55,9 +74,8 @@ export default function DonationModal({ campaign, onClose, presetAmount }) {
           frequency: pledgeFrequency,
           installments_total: pledgeInstallments,
         });
-        const sapaMsg = getSapaMessage(installmentAmount);
-        toast.success(`Pledge set up! First payment: ${formatCurrency(installmentAmount)}`);
-        onClose();
+        toast.success(`Redirecting to pay first installment: ${formatCurrency(installmentAmount)}`);
+        window.location.href = res.data.authorization_url;
         return;
       }
 
@@ -70,6 +88,7 @@ export default function DonationModal({ campaign, onClose, presetAmount }) {
         message,
         prayer: prayer || null,
         show_prayer: !!prayer,
+        payment_channel: paymentMethod,
       });
 
       // Show sapa message
@@ -152,6 +171,21 @@ export default function DonationModal({ campaign, onClose, presetAmount }) {
               </div>
             )}
           </div>
+
+          {/* Payment method */}
+          {!pledgeMode && (
+            <div>
+              <label className="block text-sm font-semibold text-dark mb-2">Payment Method</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {PAYMENT_METHODS.map(({ value, label, icon: Icon }) => (
+                  <button key={value} type="button" onClick={() => setPaymentMethod(value)}
+                    className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${paymentMethod === value ? 'border-primary bg-primary text-white' : 'border-gray-200 text-gray-700 hover:border-primary hover:text-primary'}`}>
+                    <Icon className="text-base" /> {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Donor info */}
           <div className="space-y-3">

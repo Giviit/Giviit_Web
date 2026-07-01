@@ -12,6 +12,23 @@ export function formatDaysLeft(deadline) {
   return `${diff} day${diff !== 1 ? 's' : ''} left`;
 }
 
+// Campaigns with no deadline never show day-related text at all — callers
+// should render nothing when this returns null (see CampaignCard, CampaignDetailPage).
+export function getTimeStatus(deadline) {
+  if (!deadline) return null;
+  const now = new Date();
+  const end = new Date(deadline);
+  const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+  if (daysLeft < 0) return { status: 'ended', label: 'Campaign ended', color: 'gray', daysLeft: 0 };
+  if (daysLeft === 0) return { status: 'ending_today', label: 'Ends today', color: 'red', daysLeft: 0 };
+  return {
+    status: 'active',
+    label: `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`,
+    color: daysLeft <= 3 ? 'red' : 'green',
+    daysLeft,
+  };
+}
+
 export function formatProgress(raised, goal) {
   if (!goal || goal === 0) return 0;
   const pct = Math.round((Number(raised) / Number(goal)) * 100);
