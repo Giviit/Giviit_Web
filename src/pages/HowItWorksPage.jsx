@@ -4,6 +4,7 @@ import {
   MdVerified, MdPayment, MdAccountBalance, MdShield, MdPeople,
   MdEdit, MdCampaign, MdArrowForward, MdCheckCircle, MdShare,
   MdExpandMore, MdBolt, MdSecurity, MdFingerprint, MdSearch,
+  MdTimer, MdLink, MdGridView, MdCreditCard, MdVolunteerActivism,
 } from 'react-icons/md';
 import { GiPrayerBeads } from 'react-icons/gi';
 import Navbar from '../components/Navbar';
@@ -19,7 +20,7 @@ const CREATOR_STEPS = [
     accentBg: 'bg-blue-600',
     title: 'Create Your Campaign',
     desc: 'Fill out your campaign details — title, story, goal amount, and deadline. Add photos and break your goal into milestones so donors see exactly where every naira goes.',
-    callout: '⏱ Most campaigns go live in under 5 minutes',
+    callout: { icon: MdTimer, text: 'Most campaigns go live in under 5 minutes' },
   },
   {
     num: '02',
@@ -29,7 +30,7 @@ const CREATOR_STEPS = [
     accentBg: 'bg-green-600',
     title: 'Identity Verification',
     desc: 'Submit your NIN or BVN for a one-time identity check. Our team reviews your documents within 24–48 hours and issues the "Verified" badge — the mark donors trust most.',
-    callout: '✓ Verified within 24–48 business hours',
+    callout: { icon: MdCheckCircle, text: 'Verified within 24–48 business hours' },
   },
   {
     num: '03',
@@ -39,7 +40,7 @@ const CREATOR_STEPS = [
     accentBg: 'bg-purple-600',
     title: 'Share Your Campaign Link',
     desc: 'Every campaign gets a clean shareable link the moment it goes live. Send it directly to your network on any platform or messaging app — personal outreach converts far better than broadcasts.',
-    callout: '🔗 One link works everywhere',
+    callout: { icon: MdLink, text: 'One link works everywhere' },
   },
   {
     num: '04',
@@ -49,7 +50,7 @@ const CREATOR_STEPS = [
     accentBg: 'bg-amber-500',
     title: 'Receive Your Funds',
     desc: "You don't need to reach your goal to withdraw. Request a payout at any time — funds go directly into your verified Nigerian bank account after a brief review.",
-    callout: '🏦 Payout processed within 1–3 business days',
+    callout: { icon: MdAccountBalance, text: 'Payout processed within 1–3 business days' },
   },
 ];
 
@@ -62,7 +63,7 @@ const DONOR_STEPS = [
     accentBg: 'bg-pink-600',
     title: 'Discover a Campaign',
     desc: 'Browse hundreds of verified campaigns by category — medical, education, emergency, community, business, and more. Filter by urgency, location, or funding progress to find causes you care about.',
-    callout: '📂 8 categories · Hundreds of live campaigns',
+    callout: { icon: MdGridView, text: '8 categories · Hundreds of live campaigns' },
   },
   {
     num: '02',
@@ -72,7 +73,7 @@ const DONOR_STEPS = [
     accentBg: 'bg-green-600',
     title: "Verify It's Legitimate",
     desc: 'Look for the green Verified badge (identity confirmed by our team) and the Vouched badge (a named guarantor has publicly endorsed the creator). Read the story, check campaign updates, and review milestones.',
-    callout: '🛡 Every creator is manually reviewed',
+    callout: { icon: MdSecurity, text: 'Every creator is manually reviewed' },
   },
   {
     num: '03',
@@ -82,7 +83,7 @@ const DONOR_STEPS = [
     accentBg: 'bg-blue-600',
     title: 'Donate Securely via Paystack',
     desc: 'Give any amount — even ₦100 — via Paystack. Your card and bank details go directly to Paystack; Giviit never stores payment data. An email receipt arrives in your inbox the moment the payment clears.',
-    callout: '💳 Minimum donation: ₦100 · Receipt instant',
+    callout: { icon: MdCreditCard, text: 'Minimum donation: ₦100 · Receipt instant' },
   },
   {
     num: '04',
@@ -92,7 +93,7 @@ const DONOR_STEPS = [
     accentBg: 'bg-amber-500',
     title: 'Leave a Message or Prayer',
     desc: 'After donating, leave an encouraging message or prayer for the campaign. It appears on the public Prayer Wall — visible to the creator and other donors. You can also choose to give anonymously.',
-    callout: '🙏 Anonymous giving is supported',
+    callout: { icon: MdVolunteerActivism, text: 'Anonymous giving is supported' },
   },
 ];
 
@@ -196,8 +197,9 @@ function StepRow({ step, index, last }) {
           <div>
             <h3 className="font-black text-dark text-lg leading-snug">{step.title}</h3>
             <p className="text-gray-500 text-sm leading-relaxed mt-1.5 max-w-xl">{step.desc}</p>
-            <span className="inline-block mt-3 text-xs font-semibold text-gray-400 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-full">
-              {step.callout}
+            <span className="inline-flex items-center gap-1.5 mt-3 text-xs font-semibold text-gray-400 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-full">
+              <step.callout.icon className="text-sm flex-shrink-0" />
+              {step.callout.text}
             </span>
           </div>
         </div>
