@@ -16,6 +16,15 @@ import { COUNTRIES, NIGERIAN_STATES } from '../../utils/nigerianStates';
 const CATEGORIES = ['medical', 'education', 'business', 'emergency', 'funeral', 'church', 'community', 'other'];
 const MAX_GOAL_AMOUNT = 50000000;
 
+// Nigerian identity documents accepted for verification. The creator picks
+// whichever one they have; it's submitted to Shufti Pro for verification.
+const ID_DOCUMENT_TYPES = [
+  { id: 'nin', label: 'NIN', sub: 'National Identification Number', numberLabel: 'NIN Number', placeholder: '11-digit NIN', maxLength: 11, numeric: true, hint: '11 digits', validate: v => /^\d{11}$/.test(v) },
+  { id: 'drivers_license', label: "Driver's License", sub: 'FRSC-issued license', numberLabel: 'License Number', placeholder: 'e.g. ABC12345DE67', maxLength: 20, numeric: false, hint: '5–20 characters', validate: v => /^[A-Za-z0-9-]{5,20}$/.test(v) },
+  { id: 'voters_card', label: "Voter's Card", sub: 'Permanent Voter Card (PVC)', numberLabel: 'VIN Number', placeholder: 'Voter Identification Number', maxLength: 25, numeric: false, hint: '5–25 characters', validate: v => /^[A-Za-z0-9]{5,25}$/.test(v) },
+  { id: 'intl_passport', label: 'Int’l Passport', sub: 'Nigerian International Passport', numberLabel: 'Passport Number', placeholder: 'e.g. A12345678', maxLength: 9, numeric: false, hint: 'Letter + 8 digits', validate: v => /^[A-Za-z][0-9]{8}$/.test(v) },
+];
+
 const STEPS = [
   { id: 1, label: 'Identity Verification', icon: MdShield, desc: 'Verify who you are' },
   { id: 2, label: 'Campaign Details', icon: MdFlag, desc: 'Tell your story' },
@@ -56,10 +65,26 @@ export default function CreateCampaign() {
   // browsers can't restore File objects or blob: URLs across a reload, so
   // those are intentionally left blank and re-collected from the user.
   const [identity, setIdentity] = useState({
-    nin: draft?.identity?.nin || '', selfieFile: null, selfiePreview: null,
+    documentType: draft?.identity?.documentType || 'nin',
+    documentNumber: draft?.identity?.documentNumber || '',
+    selfieFile: null, selfiePreview: null,
     idDocFile: null, idDocPreview: null, agreed: draft?.identity?.agreed || false,
   });
   const [showCamera, setShowCamera] = useState(false);
+  // 'loading' until /kyc/status answers; then 'verified' | 'unverified' | 'pending'
+  const [kycStatus, setKycStatus] = useState('loading');
+  const [verifying, setVerifying] = useState(false);
+
+  // Returning creators who already passed identity verification skip the
+  // capture entirely — Shufti verification is valid for one year.
+  useEffect(() => {
+    api.get('/kyc/status').then((res) => {
+      const s = res.data.kyc?.status;
+      setKycStatus(s === 'verified' ? 'verified' : s === 'pending' ? 'pending' : 'unverified');
+    }).catch(() => setKycStatus('unverified'));
+  }, []);
+
+  const activeDocType = ID_DOCUMENT_TYPES.find(d => d.id === identity.documentType) || ID_DOCUMENT_TYPES[0];
 
   // ── Step 2: Campaign info ──
   const [form, setForm] = useState(draft?.form || {
@@ -122,7 +147,7 @@ export default function CreateCampaign() {
   // Let the user know their text was restored, but images/selfie/ID were not.
   useEffect(() => {
     if (draft) {
-      toast('Restored your unfinished campaign. Please re-add your selfie, ID photo, and images — those can\'t be saved across a reload.', { duration: 7000, icon: '📝' });
+      toast('Restored your unfinished campaign. Please re-add your photos — those can\'t be saved across a reload.', { duration: 7000 });
     }
   }, []);
 
@@ -130,11 +155,11 @@ export default function CreateCampaign() {
   useEffect(() => {
     const data = {
       step,
-      identity: { nin: identity.nin, agreed: identity.agreed },
+      identity: { documentType: identity.documentType, documentNumber: identity.documentNumber, agreed: identity.agreed },
       form, milestones, guarantor, coOwnerEmails, birthday, prayerWallEnabled,
     };
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch {}
-  }, [step, identity.nin, identity.agreed, form, milestones, guarantor, coOwnerEmails, birthday, prayerWallEnabled]);
+  }, [step, identity.documentType, identity.documentNumber, identity.agreed, form, milestones, guarantor, coOwnerEmails, birthday, prayerWallEnabled]);
 
   const set = (setter) => (field) => (e) => {
     const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -193,9 +218,48 @@ export default function CreateCampaign() {
     });
   };
 
+  // ── Identity verification (Step 1) ──
+  // Uploads the document + selfie, then submits to Shufti Pro via the backend.
+  // In mock mode the backend accepts instantly; with live Shufti keys the
+  // result may stay pending until Shufti's webhook lands.
+  const handleVerifyIdentity = async () => {
+    if (kycStatus === 'verified' || kycStatus === 'pending') { setStep(2); return; }
+    if (!identity.agreed) { toast.error('Please confirm the accuracy of your information and accept the Anti-Fraud Policy to continue.'); return; }
+    if (!activeDocType.validate(identity.documentNumber.trim())) { toast.error(`${activeDocType.numberLabel}: ${activeDocType.hint}`); return; }
+    if (!identity.idDocFile) { toast.error(`Please add a clear photo of your ${activeDocType.label}`); return; }
+    if (!identity.selfieFile) { toast.error('Please take a selfie so we can match it to your document'); return; }
+
+    setVerifying(true);
+    try {
+      const [selfie_url, document_url] = await Promise.all([
+        uploadImage(identity.selfieFile),
+        uploadImage(identity.idDocFile),
+      ]);
+      const res = await api.post('/kyc/initiate', {
+        document_type: identity.documentType,
+        document_number: identity.documentNumber.trim(),
+        document_url,
+        selfie_url,
+        identity_agreement_accepted: identity.agreed,
+      });
+      if (res.data.status === 'verified') {
+        setKycStatus('verified');
+        toast.success('Identity verified successfully!');
+      } else {
+        setKycStatus('pending');
+        toast('Verification submitted — we\'ll notify you once it completes. You can keep building your campaign.', { duration: 6000 });
+      }
+      setStep(2);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Verification failed. Please check your details and try again.');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   // ── Step validation ──
   const canProceed = () => {
-    if (step === 1) return identity.nin.length === 11 && !!identity.selfieFile && !!identity.idDocFile && identity.agreed;
+    if (step === 1) return kycStatus === 'verified' || kycStatus === 'pending' || (activeDocType.validate(identity.documentNumber.trim()) && !!identity.selfieFile && !!identity.idDocFile && identity.agreed);
     if (step === 2) return form.title && form.category && form.goal_amount && form.description && form.story && Number(form.goal_amount) <= MAX_GOAL_AMOUNT && (!form.is_urgent || !!form.deadline);
     if (step === 3) return !!coverImage || !!coverPreview;
     if (step === 4) return milestones.every(m => !m.amount || Number(m.amount) <= Number(form.goal_amount || 0));
@@ -203,9 +267,11 @@ export default function CreateCampaign() {
   };
 
   // ── Submit ──
+  // Identity verification already happened at Step 1 (Shufti Pro via
+  // /kyc/initiate) — only campaign media is uploaded here.
   const handleSubmit = async () => {
-    if (!identity.selfieFile || !identity.idDocFile) {
-      toast.error('Please re-add your selfie and ID photo — they can\'t be restored after a page reload.');
+    if (kycStatus !== 'verified' && kycStatus !== 'pending') {
+      toast.error('Please complete identity verification first.');
       setStep(1);
       return;
     }
@@ -217,18 +283,6 @@ export default function CreateCampaign() {
 
     setLoading(true);
     try {
-      // Upload identity documents to Cloudinary, then submit for review
-      const [selfie_url, id_document_url] = await Promise.all([
-        uploadImage(identity.selfieFile),
-        uploadImage(identity.idDocFile),
-      ]);
-      await api.post('/auth/verify-identity', {
-        nin: identity.nin,
-        selfie_url,
-        id_document_url,
-        identity_agreement_accepted: identity.agreed,
-      });
-
       // Upload images
       let cover_image = '';
       if (coverImage) cover_image = await uploadImage(coverImage);
@@ -308,79 +362,124 @@ export default function CreateCampaign() {
         {/* ── STEP 1: Identity Verification ── */}
         {step === 1 && (
           <div className="space-y-5">
+            {kycStatus === 'verified' ? (
+              <div className="bg-white rounded-2xl border border-green-200 p-6 shadow-sm text-center">
+                <div className="w-14 h-14 mx-auto rounded-full bg-green-100 flex items-center justify-center mb-3">
+                  <MdVerified className="text-3xl text-green-600" />
+                </div>
+                <h3 className="font-black text-dark text-lg">You're verified</h3>
+                <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+                  Your identity was already verified. You can go straight to your campaign details.
+                </p>
+              </div>
+            ) : kycStatus === 'pending' ? (
+              <div className="bg-white rounded-2xl border border-amber-200 p-6 shadow-sm text-center">
+                <div className="w-14 h-14 mx-auto rounded-full bg-amber-100 flex items-center justify-center mb-3">
+                  <MdShield className="text-3xl text-amber-600" />
+                </div>
+                <h3 className="font-black text-dark text-lg">Verification in progress</h3>
+                <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+                  Your identity verification is being processed. You can keep building your campaign — we'll notify you once it completes.
+                </p>
+              </div>
+            ) : (
+            <>
             <div className="border-l-4 border-primary pl-4 py-1">
               <p className="text-sm font-semibold text-dark">Identity Verification Required</p>
               <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                To protect donors and prevent fraud, we require all campaign creators to verify their identity before publishing.
+                To protect donors and prevent fraud, we verify every campaign creator's identity. Pick any government-issued document you have — verification is instant.
               </p>
             </div>
 
+            {/* Document type picker */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4 shadow-sm">
-              <h3 className="font-bold text-dark">NIN Verification</h3>
+              <h3 className="font-bold text-dark">Choose Your ID Document</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {ID_DOCUMENT_TYPES.map(doc => (
+                  <button key={doc.id} type="button"
+                    onClick={() => setIdentity(p => ({ ...p, documentType: doc.id, documentNumber: '' }))}
+                    className={`text-left rounded-xl border-2 p-3.5 transition-all min-h-[76px] ${
+                      identity.documentType === doc.id
+                        ? 'border-primary bg-primary/5 shadow-sm'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}>
+                    <div className="flex items-center gap-2">
+                      <MdBadge className={`text-lg flex-shrink-0 ${identity.documentType === doc.id ? 'text-primary' : 'text-gray-400'}`} />
+                      <span className={`text-sm font-bold ${identity.documentType === doc.id ? 'text-primary' : 'text-dark'}`}>{doc.label}</span>
+                    </div>
+                    <p className="text-[11px] text-gray-400 mt-1 leading-snug">{doc.sub}</p>
+                  </button>
+                ))}
+              </div>
 
               <div>
-                <label className="block text-sm font-semibold text-dark mb-1.5">NIN (National ID Number) <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-semibold text-dark mb-1.5">{activeDocType.numberLabel} <span className="text-red-500">*</span></label>
                 <input
-                  value={identity.nin}
-                  onChange={e => setIdentity(p => ({ ...p, nin: e.target.value.replace(/\D/g,'').slice(0,11) }))}
-                  placeholder="11-digit NIN"
-                  maxLength={11}
+                  value={identity.documentNumber}
+                  onChange={e => {
+                    let v = e.target.value;
+                    if (activeDocType.numeric) v = v.replace(/\D/g, '');
+                    setIdentity(p => ({ ...p, documentNumber: v.slice(0, activeDocType.maxLength) }));
+                  }}
+                  placeholder={activeDocType.placeholder}
+                  maxLength={activeDocType.maxLength}
+                  inputMode={activeDocType.numeric ? 'numeric' : 'text'}
                   className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono tracking-widest"
                 />
-                <p className="text-xs text-gray-400 mt-1">{identity.nin.length}/11 digits</p>
+                <p className="text-xs text-gray-400 mt-1">{activeDocType.hint}</p>
               </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4 shadow-sm">
-              <h3 className="font-bold text-dark">Identity Documents</h3>
+              <h3 className="font-bold text-dark">Take Your Photos</h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Selfie */}
+                {/* ID Document photo */}
                 <div>
-                  <label className="block text-sm font-semibold text-dark mb-1.5">Selfie Photo <span className="text-red-500">*</span></label>
-                  {identity.selfiePreview ? (
-                    <div className="relative rounded-xl overflow-hidden h-32 bg-gray-100">
-                      <img src={identity.selfiePreview} alt="" className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => setIdentity(p => ({ ...p, selfieFile: null, selfiePreview: null }))}
-                        className="absolute top-2 right-2 w-7 h-7 bg-black/50 text-white rounded-full flex items-center justify-center">
-                        <MdClose className="text-sm" />
-                      </button>
-                    </div>
-                  ) : (
-                    <button type="button" onClick={() => setShowCamera(true)}
-                      className="w-full h-32 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-green-50 transition-all">
-                      <MdCameraAlt className="text-3xl text-gray-400" />
-                      <p className="text-xs text-gray-500">Open camera to capture</p>
-                    </button>
-                  )}
-                  <input ref={selfieInputRef} type="file" accept="image/*" capture="user" className="hidden" onChange={handleSelfie} />
-                </div>
-
-                {/* ID Document */}
-                <div>
-                  <label className="block text-sm font-semibold text-dark mb-1.5">Government ID <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-semibold text-dark mb-1.5">Photo of your {activeDocType.label} <span className="text-red-500">*</span></label>
                   {identity.idDocPreview ? (
-                    <div className="relative rounded-xl overflow-hidden h-32 bg-gray-100">
+                    <div className="relative rounded-xl overflow-hidden h-36 bg-gray-100">
                       <img src={identity.idDocPreview} alt="" className="w-full h-full object-cover" />
                       <button type="button" onClick={() => setIdentity(p => ({ ...p, idDocFile: null, idDocPreview: null }))}
-                        className="absolute top-2 right-2 w-7 h-7 bg-black/50 text-white rounded-full flex items-center justify-center">
+                        className="absolute top-2 right-2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center">
                         <MdClose className="text-sm" />
                       </button>
                     </div>
                   ) : (
                     <button type="button" onClick={() => idDocInputRef.current?.click()}
-                      className="w-full h-32 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-green-50 transition-all">
+                      className="w-full h-36 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-green-50 transition-all">
                       <MdBadge className="text-3xl text-gray-400" />
-                      <p className="text-xs text-gray-500">NIN slip, Voter card, or Passport</p>
+                      <p className="text-xs text-gray-500 px-3 text-center">Snap or upload a clear photo of the front</p>
                     </button>
                   )}
-                  <input ref={idDocInputRef} type="file" accept="image/*" className="hidden" onChange={handleIdDoc} />
+                  <input ref={idDocInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleIdDoc} />
+                </div>
+
+                {/* Selfie */}
+                <div>
+                  <label className="block text-sm font-semibold text-dark mb-1.5">Selfie Photo <span className="text-red-500">*</span></label>
+                  {identity.selfiePreview ? (
+                    <div className="relative rounded-xl overflow-hidden h-36 bg-gray-100">
+                      <img src={identity.selfiePreview} alt="" className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => setIdentity(p => ({ ...p, selfieFile: null, selfiePreview: null }))}
+                        className="absolute top-2 right-2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center">
+                        <MdClose className="text-sm" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => setShowCamera(true)}
+                      className="w-full h-36 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-green-50 transition-all">
+                      <MdCameraAlt className="text-3xl text-gray-400" />
+                      <p className="text-xs text-gray-500 px-3 text-center">Open camera — we match your face to your ID</p>
+                    </button>
+                  )}
+                  <input ref={selfieInputRef} type="file" accept="image/*" capture="user" className="hidden" onChange={handleSelfie} />
                 </div>
               </div>
 
               <p className="text-xs text-gray-400 bg-gray-50 rounded-xl p-3 leading-relaxed">
                 <MdLock className="inline mr-1 text-primary" />
-                Your documents are encrypted and only seen by our verification team. They are never shown publicly.
+                Your documents are verified securely by our identity partner and are never shown publicly.
               </p>
             </div>
 
@@ -396,13 +495,15 @@ export default function CreateCampaign() {
                 </span>
               </label>
             </div>
+            </>
+            )}
 
             {/* Anti-fraud checks display */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Anti-Fraud Checks Applied to All Campaigns</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
-                  'NIN Verification', 'Document + Selfie Match',
+                  'Government ID Verification', 'Document + Selfie Match',
                   'Bank Account Verification', 'Phone Number OTP',
                   'Campaign Document Review', 'AI Fraud Detection',
                   'Community Report System', 'Guarantor Vouching',
@@ -999,16 +1100,22 @@ export default function CreateCampaign() {
                 <MdArrowBack /> Back
               </button>
             )}
-            <button type="button" onClick={() => {
+            <button type="button" disabled={verifying} onClick={() => {
+              if (step === 1) { handleVerifyIdentity(); return; }
               if (canProceed() || step >= 5) { setStep(step + 1); return; }
-              if (step === 1 && !identity.agreed) { toast.error('Please confirm the accuracy of your information and accept the Anti-Fraud Policy to continue.'); return; }
               if (step === 2 && form.is_urgent && !form.deadline) { toast.error('Urgent campaigns must have a deadline date and time'); return; }
               if (step === 2 && Number(form.goal_amount) > MAX_GOAL_AMOUNT) { toast.error(`Campaign goals are capped at ${formatCurrency(MAX_GOAL_AMOUNT)}. Need more? Contact admin at support@giviit.ng.`); return; }
               if (step === 4) { toast.error("A milestone amount can't exceed your overall campaign goal."); return; }
               toast.error('Please complete all required fields');
             }}
-              className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm flex items-center justify-center gap-1 transition-colors">
-              Next <MdArrowForward />
+              className="flex-1 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60">
+              {step === 1 && verifying ? (
+                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Verifying...</>
+              ) : step === 1 && kycStatus !== 'verified' && kycStatus !== 'pending' ? (
+                <>Verify & Continue <MdArrowForward /></>
+              ) : (
+                <>Next <MdArrowForward /></>
+              )}
             </button>
           </div>
         )}

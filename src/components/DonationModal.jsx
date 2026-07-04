@@ -103,10 +103,12 @@ export default function DonationModal({ campaign, onClose, presetAmount }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    // Bottom sheet on mobile (app-style), centered dialog on larger screens
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[92vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between rounded-t-2xl z-10">
+      <div className="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-md max-h-[92vh] overflow-y-auto animate-slide-up sm:animate-none pb-[env(safe-area-inset-bottom)]">
+        <div className="sm:hidden pt-3 flex justify-center"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
+        <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between rounded-t-3xl sm:rounded-t-2xl z-10">
           <div>
             <h2 className="text-base font-bold text-dark">{pledgeMode ? 'Make a Pledge' : 'Make a Donation'}</h2>
             <p className="text-xs text-gray-500 truncate max-w-[260px]">{campaign.title}</p>

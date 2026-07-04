@@ -178,14 +178,14 @@ export default function HomePage() {
                 Giviit is Nigeria's home for crowdfunding. Start a campaign in minutes, share your link, and receive donations straight to your bank account.
               </p>
 
-              <div className="flex flex-wrap gap-3 mb-10">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mb-10">
                 <Link to="/register"
-                  className="inline-flex items-center gap-2.5 bg-[#f5a623] hover:bg-[#e09510] text-white font-black px-8 py-4 rounded-2xl text-base transition-all hover:scale-[1.03] shadow-xl shadow-[#f5a623]/25"
+                  className="inline-flex items-center justify-center gap-2.5 bg-[#f5a623] hover:bg-[#e09510] text-white font-black px-8 py-4 rounded-2xl text-base transition-all hover:scale-[1.03] shadow-xl shadow-[#f5a623]/25 w-full sm:w-auto"
                 >
                   Start a Campaign <ArrowRight size={20} />
                 </Link>
                 <Link to="/campaigns"
-                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold px-8 py-4 rounded-2xl text-base transition-all backdrop-blur-sm"
+                  className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold px-8 py-4 rounded-2xl text-base transition-all backdrop-blur-sm w-full sm:w-auto"
                 >
                   Browse Campaigns
                 </Link>

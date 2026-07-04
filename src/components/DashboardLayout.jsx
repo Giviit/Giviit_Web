@@ -104,15 +104,19 @@ export default function DashboardLayout({ children }) {
 
       {/* Main content */}
       <div className="flex-1 lg:ml-64">
-        {/* Mobile header */}
-        <div className="lg:hidden flex items-center justify-between bg-white border-b border-gray-100 px-4 py-3">
-          <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-lg hover:bg-gray-100">
-            <MdMenu className="text-xl" />
+        {/* Mobile header — sticky so navigation stays reachable while scrolling */}
+        <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between bg-white/95 backdrop-blur-lg border-b border-gray-100 px-4 py-3">
+          <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 rounded-xl hover:bg-gray-100 active:bg-gray-200" aria-label="Open menu">
+            <MdMenu className="text-2xl" />
           </button>
           <span className="font-black text-dark text-lg tracking-tight">Giviit</span>
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-bold">{user?.full_name?.charAt(0)}</span>
-          </div>
+          <Link to="/dashboard/profile" className="w-9 h-9 bg-primary rounded-full flex items-center justify-center overflow-hidden" aria-label="Profile">
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover" />
+            ) : (
+              <span className="text-white text-sm font-bold">{user?.full_name?.charAt(0)}</span>
+            )}
+          </Link>
         </div>
 
         <main className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 // Public pages
 import HomePage from './pages/HomePage';
@@ -39,10 +39,22 @@ import PledgePayPage from './pages/PledgePayPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
 import CookieBanner from './components/ui/CookieBanner';
+import BottomNav from './components/BottomNav';
+
+// Primary navigation routes get the app-style bottom tab bar on mobile.
+// Flows with their own bottom UI (campaign detail's sticky donate bar, the
+// create wizard, checkout/auth pages) are left out so the bars don't clash.
+const BOTTOM_NAV_ROUTES = [
+  '/', '/campaigns', '/blog', '/how-it-works', '/about',
+  '/dashboard', '/dashboard/campaigns', '/dashboard/withdrawals', '/dashboard/profile',
+];
 
 function App() {
+  const location = useLocation();
+  const showBottomNav = BOTTOM_NAV_ROUTES.includes(location.pathname);
+
   return (
-    <div className="min-h-screen">
+    <div className={`min-h-screen ${showBottomNav ? 'pb-16 md:pb-0' : ''}`}>
       <ScrollToTop />
       <CookieBanner />
       <Routes>
@@ -84,6 +96,7 @@ function App() {
         {/* Fallback */}
         <Route path="*" element={<Navigate replace to="/" />} />
       </Routes>
+      {showBottomNav && <BottomNav />}
     </div>
   );
 }
