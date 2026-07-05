@@ -15,14 +15,14 @@ import api from '../utils/api';
 
 /* ─── constants ─────────────────────────────────────────────────── */
 const TICKER_ITEMS = [
-  '🟢 Adaeze reached 80% of her goal in 48 hours',
-  '💚 ₦500,000 raised for flood relief in Lokoja today',
-  '🎯 3 campaigns hit their full goals this week',
-  '🔴 Urgent: Community market rebuild needs your support',
-  '🟢 Scholarship fund crossed ₦1.9M raised',
-  '📱 One WhatsApp message can unlock your first 20 donations',
-  '💳 Every naira on Giviit is secured by Paystack',
-  '🎉 New: 14,200+ campaigns successfully funded so far',
+  'Adaeze reached 80% of her goal in 48 hours',
+  '₦500,000 raised for flood relief in Lokoja today',
+  '3 campaigns hit their full goals this week',
+  'Urgent: Community market rebuild needs your support',
+  'Scholarship fund crossed ₦1.9M raised',
+  'One WhatsApp message can unlock your first 20 donations',
+  'Every naira on Giviit is secured by Paystack',
+  'New: 14,200+ campaigns successfully funded so far',
 ];
 
 const CATEGORY_GRID = [
@@ -147,7 +147,7 @@ export default function HomePage() {
       <Navbar />
 
       {/* ══ HERO ══ */}
-      <section className="min-h-screen bg-[#0D1A0D] relative overflow-hidden flex flex-col">
+      <section className="lg:min-h-screen bg-[#0D1A0D] relative overflow-hidden flex flex-col">
         {/* Lagos city skyline — bright */}
         <img
           src="https://images.unsplash.com/photo-1618828665011-0abd973f7bb8?w=1800&q=85"
@@ -157,35 +157,35 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-r from-[#0D1A0D]/90 via-[#0D1A0D]/60 to-[#0D1A0D]/20" />
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0D1A0D] to-transparent" />
 
-        <div className="relative flex-1 max-w-[1440px] mx-auto w-full px-5 sm:px-12 lg:px-20 pt-20 sm:pt-24 pb-12 sm:pb-16 flex flex-col justify-center">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_500px] gap-8 lg:gap-12 items-center min-h-[calc(100vh-5rem)]">
+        <div className="relative flex-1 max-w-[1440px] mx-auto w-full px-5 sm:px-12 lg:px-20 pt-16 sm:pt-24 pb-8 sm:pb-16 flex flex-col justify-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_500px] gap-8 lg:gap-12 items-center lg:min-h-[calc(100vh-5rem)]">
 
             {/* Copy */}
             <div>
-              <span className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/80 text-[11px] font-black px-4 py-1.5 rounded-full mb-8 uppercase tracking-[0.15em]">
+              <span className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/80 text-[10px] sm:text-[11px] font-black px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-5 sm:mb-8 uppercase tracking-[0.15em]">
                 <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
                 Nigeria's #1 Crowdfunding Platform
               </span>
 
-              <h1 className="font-black text-white mb-8 select-none"
-                style={{ fontSize: 'clamp(3.8rem, 10vw, 8.8rem)', lineHeight: 0.87, letterSpacing: '-0.04em' }}
+              <h1 className="font-black text-white mb-5 sm:mb-8 select-none"
+                style={{ fontSize: 'clamp(2.6rem, 10vw, 8.8rem)', lineHeight: 0.87, letterSpacing: '-0.04em' }}
               >
                 <span className="block">TOGETHER</span>
                 <span className="block text-[#f5a623]">WE RISE.</span>
               </h1>
 
-              <p className="text-gray-300 text-lg sm:text-xl leading-relaxed mb-10 max-w-[500px]">
+              <p className="text-gray-300 text-[15px] sm:text-xl leading-relaxed mb-6 sm:mb-10 max-w-[500px]">
                 Giviit is Nigeria's home for crowdfunding. Start a campaign in minutes, share your link, and receive donations straight to your bank account.
               </p>
 
-              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mb-10">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2.5 sm:gap-3 mb-6 sm:mb-10">
                 <Link to="/register"
-                  className="inline-flex items-center justify-center gap-2.5 bg-[#f5a623] hover:bg-[#e09510] text-white font-black px-8 py-4 rounded-2xl text-base transition-all hover:scale-[1.03] shadow-xl shadow-[#f5a623]/25 w-full sm:w-auto"
+                  className="inline-flex items-center justify-center gap-2.5 bg-[#f5a623] hover:bg-[#e09510] text-white font-black px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-sm sm:text-base transition-all hover:scale-[1.03] shadow-xl shadow-[#f5a623]/25 w-full sm:w-auto"
                 >
-                  Start a Campaign <ArrowRight size={20} />
+                  Start a Campaign <ArrowRight size={18} />
                 </Link>
                 <Link to="/campaigns"
-                  className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold px-8 py-4 rounded-2xl text-base transition-all backdrop-blur-sm w-full sm:w-auto"
+                  className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-sm sm:text-base transition-all backdrop-blur-sm w-full sm:w-auto"
                 >
                   Browse Campaigns
                 </Link>
@@ -206,7 +206,7 @@ export default function HomePage() {
       </section>
 
       {/* ══ IMPACT NUMBERS ══ */}
-      <section className="bg-[#0f2417] py-12 sm:py-20">
+      <section className="bg-[#0f2417] py-9 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-20">
           <p className="text-[#22c55e] text-[11px] font-black uppercase tracking-[0.2em] mb-8 sm:mb-12">The numbers don't lie</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
@@ -216,7 +216,7 @@ export default function HomePage() {
               { big: '320,000+', label: 'donors across Nigeria', note: 'All 36 states and FCT' },
             ].map(({ big, label, note }, i) => (
               <div key={label} className={`py-8 sm:py-10 ${i === 1 ? 'sm:px-12 sm:text-center' : i === 2 ? 'sm:pl-12 sm:text-right' : 'sm:pr-12'}`}>
-                <div className="font-black text-white" style={{ fontSize: 'clamp(2rem, 5vw, 3.8rem)', lineHeight: 1, letterSpacing: '-0.04em' }}>
+                <div className="font-black text-white" style={{ fontSize: 'clamp(1.6rem, 5vw, 3.8rem)', lineHeight: 1, letterSpacing: '-0.04em' }}>
                   {big}
                 </div>
                 <p className="text-[#22c55e] font-bold text-sm mt-2">{label}</p>
@@ -229,12 +229,12 @@ export default function HomePage() {
 
       {/* ══ URGENT CAMPAIGNS — auto-scroll carousel ══ */}
       {(urgentLoading || (urgentData && urgentData.length > 0)) && (
-        <section className="py-12 sm:py-20 bg-[#F7F4EE] overflow-hidden">
+        <section className="py-9 sm:py-20 bg-[#F7F4EE] overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-20 mb-8">
             <div className="inline-flex items-center gap-2 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4">
               <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> Urgent
             </div>
-            <h2 className="font-black text-[#0D1A0D]" style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+            <h2 className="font-black text-[#0D1A0D]" style={{ fontSize: 'clamp(1.4rem, 4vw, 3rem)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
               Needs your help<br /><span className="text-red-500">right now.</span>
             </h2>
           </div>
@@ -264,12 +264,12 @@ export default function HomePage() {
       )}
 
       {/* ══ DISCOVER — visual category filter ══ */}
-      <section className="py-12 sm:py-20 bg-white">
+      <section className="py-9 sm:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-20">
           <div className="flex items-start justify-between gap-4 mb-8 sm:mb-10">
             <div>
               <p className="text-[#1a7a4a] text-[11px] font-black uppercase tracking-[0.2em] mb-3">Discover</p>
-              <h2 className="font-black text-[#0D1A0D]" style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+              <h2 className="font-black text-[#0D1A0D]" style={{ fontSize: 'clamp(1.4rem, 4vw, 3rem)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
                 Campaigns in<br />your community
               </h2>
             </div>
@@ -320,12 +320,12 @@ export default function HomePage() {
 
       {/* ══ FEATURED CAMPAIGNS ══ */}
       {(featuredLoading || (featuredData && featuredData.length > 0)) && (
-        <section className="py-12 sm:py-20 bg-[#F7F4EE]">
+        <section className="py-9 sm:py-20 bg-[#F7F4EE]">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-20">
             <div className="flex items-end justify-between mb-10">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1a7a4a] mb-3">Editor's Picks</p>
-                <h2 className="font-black text-[#0D1A0D]" style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                <h2 className="font-black text-[#0D1A0D]" style={{ fontSize: 'clamp(1.4rem, 4vw, 3rem)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
                   Campaigns<br />we love
                 </h2>
               </div>
@@ -345,9 +345,9 @@ export default function HomePage() {
 
       {/* ══ CATEGORY WALL ══ */}
       <section className="bg-[#0D1A0D]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-20 pt-20 pb-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-20 pt-12 sm:pt-20 pb-4">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-12">
-            <h2 className="font-black text-white" style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', letterSpacing: '-0.04em', lineHeight: 0.95 }}>
+            <h2 className="font-black text-white" style={{ fontSize: 'clamp(1.5rem, 5vw, 4rem)', letterSpacing: '-0.04em', lineHeight: 0.95 }}>
               Every cause.<br /><span className="text-[#22c55e]">One platform.</span>
             </h2>
             <Link to="/campaigns" className="text-white/30 text-sm font-bold hover:text-white transition-colors flex items-center gap-1 self-end sm:self-auto">
@@ -373,11 +373,11 @@ export default function HomePage() {
       </section>
 
       {/* ══ HOW IT WORKS ══ */}
-      <section className="py-14 sm:py-24 bg-[#F7F4EE]">
+      <section className="py-10 sm:py-24 bg-[#F7F4EE]">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-20">
           <div className="mb-10 sm:mb-16">
             <p className="text-[#1a7a4a] text-[11px] font-black uppercase tracking-[0.2em] mb-4">Simple. Fast. Trusted.</p>
-            <h2 className="font-black text-[#0D1A0D]" style={{ fontSize: 'clamp(2.2rem, 5vw, 4rem)', letterSpacing: '-0.04em', lineHeight: 0.95 }}>
+            <h2 className="font-black text-[#0D1A0D]" style={{ fontSize: 'clamp(1.6rem, 5vw, 4rem)', letterSpacing: '-0.04em', lineHeight: 0.95 }}>
               Get started<br />in 3 minutes.
             </h2>
           </div>
@@ -386,7 +386,7 @@ export default function HomePage() {
             {HOW_STEPS.map(({ n, title, sub, body, icon: Icon }, i) => (
               <div key={n} className={`flex flex-col sm:flex-row gap-1 sm:gap-8 py-8 sm:py-12 items-start ${i % 2 === 1 ? 'sm:flex-row-reverse' : ''}`}>
                 <div className="flex-shrink-0 sm:w-28">
-                  <span className="font-black text-[#0D1A0D]/[0.08] select-none leading-none block" style={{ fontSize: 'clamp(3.5rem, 10vw, 8rem)', letterSpacing: '-0.05em' }}>
+                  <span className="font-black text-[#0D1A0D]/[0.08] select-none leading-none block" style={{ fontSize: 'clamp(2.4rem, 10vw, 8rem)', letterSpacing: '-0.05em' }}>
                     {n}
                   </span>
                 </div>
@@ -472,7 +472,7 @@ export default function HomePage() {
       </section>
 
       {/* ══ TRUST ══ */}
-      <section className="py-14 sm:py-24 bg-white">
+      <section className="py-10 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-20">
           <div className="max-w-3xl mb-10 sm:mb-16">
             <p className="text-[#1a7a4a] text-[11px] font-black uppercase tracking-[0.2em] mb-5">Why trust Giviit</p>

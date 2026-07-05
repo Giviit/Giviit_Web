@@ -54,7 +54,7 @@ function App() {
   const showBottomNav = BOTTOM_NAV_ROUTES.includes(location.pathname);
 
   return (
-    <div className={`min-h-screen ${showBottomNav ? 'pb-16 md:pb-0' : ''}`}>
+    <div className={`min-h-screen ${showBottomNav ? 'pb-[52px] md:pb-0' : ''}`}>
       <ScrollToTop />
       <CookieBanner />
       <Routes>

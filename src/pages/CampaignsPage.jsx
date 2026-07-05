@@ -111,18 +111,18 @@ export default function CampaignsPage() {
         />
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-dark to-transparent" />
 
-        <div className="relative max-w-3xl mx-auto px-6 sm:px-10 py-16 sm:py-20 text-center">
+        <div className="relative max-w-3xl mx-auto px-5 sm:px-10 py-10 sm:py-20 text-center">
           <span className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/60 text-xs font-bold px-4 py-1.5 rounded-full mb-6 uppercase tracking-widest">
             <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
             {total > 0 ? `${total.toLocaleString()} live campaigns` : 'Live campaigns'}
           </span>
 
-          <h1 className="font-black text-white mb-3" style={{ fontSize: 'clamp(2.2rem, 6vw, 3.6rem)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+          <h1 className="font-black text-white mb-3" style={{ fontSize: 'clamp(1.7rem, 6vw, 3.6rem)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
             Find a Campaign
             <br />
             <span className="text-accent">to Support</span>
           </h1>
-          <p className="text-gray-400 mb-10 text-base sm:text-lg">
+          <p className="text-gray-400 mb-6 sm:mb-10 text-sm sm:text-lg">
             Every campaign is verified by our team. Browse, filter, and give with confidence.
           </p>
 
@@ -134,7 +134,7 @@ export default function CampaignsPage() {
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
               placeholder="Search by title, story, or cause…"
-              className="w-full pl-12 pr-12 py-4 bg-white/10 border border-white/15 text-white placeholder:text-gray-500 rounded-2xl focus:outline-none focus:border-accent focus:bg-white/15 transition-all text-sm backdrop-blur-sm"
+              className="w-full pl-12 pr-12 py-3 sm:py-4 bg-white/10 border border-white/15 text-white placeholder:text-gray-500 rounded-2xl focus:outline-none focus:border-accent focus:bg-white/15 transition-all text-sm backdrop-blur-sm"
             />
             {searchInput && (
               <button

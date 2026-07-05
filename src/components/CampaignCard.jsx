@@ -21,7 +21,7 @@ export default function CampaignCard({ campaign }) {
       className="relative bg-white rounded-2xl overflow-hidden flex flex-col group border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-200"
     >
       {/* Image */}
-      <div className="relative h-44 sm:h-48 overflow-hidden bg-gray-100 flex-shrink-0">
+      <div className="relative h-36 sm:h-48 overflow-hidden bg-gray-100 flex-shrink-0">
         {campaign.cover_image ? (
           <img
             src={campaign.cover_image}
@@ -91,7 +91,7 @@ export default function CampaignCard({ campaign }) {
       </div>
 
       {/* Content */}
-      <div className="p-4 flex flex-col flex-1 gap-2.5">
+      <div className="p-3 sm:p-4 flex flex-col flex-1 gap-2">
 
         {/* Title */}
         <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 group-hover:text-green-700 transition-colors duration-200">

@@ -23,47 +23,47 @@ export default function BottomNav() {
       className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-lg border-t border-gray-100"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="grid grid-cols-5 h-16">
+      <div className="grid grid-cols-5 h-[52px]">
         <NavLink to="/" end className={({ isActive }) => tabClass(isActive)}>
-          <MdHome className="text-2xl" />
-          <span className="text-[10px] font-semibold">Home</span>
+          <MdHome className="text-xl" />
+          <span className="text-[9px] font-semibold">Home</span>
         </NavLink>
 
         <NavLink to="/campaigns" className={({ isActive }) => tabClass(isActive)}>
-          <MdExplore className="text-2xl" />
-          <span className="text-[10px] font-semibold">Explore</span>
+          <MdExplore className="text-xl" />
+          <span className="text-[9px] font-semibold">Explore</span>
         </NavLink>
 
         {/* Center raised action — start a campaign */}
         <div className="relative flex justify-center">
           <Link
             to={user ? '/dashboard/campaigns/create' : '/register'}
-            className="absolute -top-5 w-14 h-14 rounded-full bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/30 active:scale-95 transition-transform"
+            className="absolute -top-3.5 w-11 h-11 rounded-full bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/30 active:scale-95 transition-transform"
             aria-label="Start a campaign"
           >
-            <MdAdd className="text-3xl" />
+            <MdAdd className="text-2xl" />
           </Link>
-          <span className="absolute bottom-1.5 text-[10px] font-semibold text-gray-400">Start</span>
+          <span className="absolute bottom-1 text-[9px] font-semibold text-gray-400">Start</span>
         </div>
 
         <NavLink to="/dashboard" className={() => tabClass(dashboardActive)}>
-          <MdSpaceDashboard className="text-2xl" />
-          <span className="text-[10px] font-semibold">Dashboard</span>
+          <MdSpaceDashboard className="text-xl" />
+          <span className="text-[9px] font-semibold">Dashboard</span>
         </NavLink>
 
         {user ? (
           <NavLink to="/dashboard/profile" className={({ isActive }) => tabClass(isActive)}>
             {user.avatar_url ? (
-              <img src={user.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" />
+              <img src={user.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" />
             ) : (
-              <MdPerson className="text-2xl" />
+              <MdPerson className="text-xl" />
             )}
-            <span className="text-[10px] font-semibold">Profile</span>
+            <span className="text-[9px] font-semibold">Profile</span>
           </NavLink>
         ) : (
           <NavLink to="/login" className={({ isActive }) => tabClass(isActive)}>
-            <MdLogin className="text-2xl" />
-            <span className="text-[10px] font-semibold">Sign In</span>
+            <MdLogin className="text-xl" />
+            <span className="text-[9px] font-semibold">Sign In</span>
           </NavLink>
         )}
       </div>
