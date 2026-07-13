@@ -102,8 +102,10 @@ export default function DashboardLayout({ children }) {
         </div>
       )}
 
-      {/* Main content */}
-      <div className="flex-1 lg:ml-64">
+      {/* Main content — min-w-0 lets this flex column shrink below its
+          content's min width, so wide children (step bars, tables) scroll
+          inside their own overflow-x-auto instead of widening the page */}
+      <div className="flex-1 min-w-0 lg:ml-64">
         {/* Mobile header — sticky so navigation stays reachable while scrolling */}
         <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between bg-white/95 backdrop-blur-lg border-b border-gray-100 px-4 py-2">
           <button onClick={() => setSidebarOpen(true)} className="p-1.5 -ml-1.5 rounded-lg hover:bg-gray-100 active:bg-gray-200" aria-label="Open menu">

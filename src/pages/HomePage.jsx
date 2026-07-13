@@ -215,7 +215,7 @@ export default function HomePage() {
               { big: '14,200+',  label: 'campaigns funded',      note: 'Medical · Education · Emergency · Community' },
               { big: '320,000+', label: 'donors across Nigeria', note: 'All 36 states and FCT' },
             ].map(({ big, label, note }, i) => (
-              <div key={label} className={`py-8 sm:py-10 ${i === 1 ? 'sm:px-12 sm:text-center' : i === 2 ? 'sm:pl-12 sm:text-right' : 'sm:pr-12'}`}>
+              <div key={label} className={`py-5 sm:py-10 ${i === 1 ? 'sm:px-12 sm:text-center' : i === 2 ? 'sm:pl-12 sm:text-right' : 'sm:pr-12'}`}>
                 <div className="font-black text-white" style={{ fontSize: 'clamp(1.6rem, 5vw, 3.8rem)', lineHeight: 1, letterSpacing: '-0.04em' }}>
                   {big}
                 </div>
@@ -346,7 +346,7 @@ export default function HomePage() {
       {/* ══ CATEGORY WALL ══ */}
       <section className="bg-[#0D1A0D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-20 pt-12 sm:pt-20 pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-3 mb-6 sm:mb-12">
             <h2 className="font-black text-white" style={{ fontSize: 'clamp(1.5rem, 5vw, 4rem)', letterSpacing: '-0.04em', lineHeight: 0.95 }}>
               Every cause.<br /><span className="text-[#22c55e]">One platform.</span>
             </h2>
@@ -540,7 +540,7 @@ export default function HomePage() {
 
       {showBackToTop && (
         <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Back to top"
-          className="fixed bottom-6 right-6 z-50 w-11 h-11 bg-[#0D1A0D] text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-[#1a7a4a] transition-colors"
+          className="fixed bottom-[68px] md:bottom-6 right-4 md:right-6 z-30 w-10 h-10 md:w-11 md:h-11 bg-[#0D1A0D] text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-[#1a7a4a] transition-colors"
         >
           <ArrowUp size={20} />
         </button>
