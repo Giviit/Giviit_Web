@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($bytes = [System.IO.File]::ReadAllBytes\\(\"C:\\\\Users\\\\oreto\\\\Desktop\\\\CrowdRasing\\\\Frontend\\\\package.json\"\\); \"First 4 bytes: $\\($bytes[0..3] -join ','\\)\"; if \\($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF\\) { \"HAS UTF-8 BOM\" } else { \"No BOM\" })",
+      "PowerShell($content = [System.IO.File]::ReadAllText\\(\"C:\\\\Users\\\\oreto\\\\Desktop\\\\CrowdRasing\\\\Frontend\\\\package.json\", [System.Text.Encoding]::UTF8\\); [System.IO.File]::WriteAllText\\(\"C:\\\\Users\\\\oreto\\\\Desktop\\\\CrowdRasing\\\\Frontend\\\\package.json\", $content, \\(New-Object System.Text.UTF8Encoding $false\\)\\); \"Done — BOM removed\")",
+      "PowerShell($bytes = [System.IO.File]::ReadAllBytes\\(\"C:\\\\Users\\\\oreto\\\\Desktop\\\\CrowdRasing\\\\Frontend\\\\package.json\"\\); \"First 4 bytes: $\\($bytes[0..3] -join ','\\)\"; if \\($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF\\) { \"Still has BOM\" } else { \"BOM removed successfully\" })"
+    ]
+  }
+}
